@@ -1,677 +1,1179 @@
 # CHANGELOG
 
-## `v19.1.0`
+## `v36.2.0`
 
-### New Services
+### New Packages
 
-|            Package Name |      API Version      |
-| ----------------------: | :-------------------: |
-|              iotcentral |       2018-09-01      |
-|                 network |       2018-06-01      |
-|                security |   2017-08-01-preview  |
+| Package Name | API Version |
+| -----------: | :---------: |
+| media | 2019-05-01-preview |
+| netapp | 2019-08-01 |
+| sql | v3.0 |
 
-### Updated Services
+### Updated Packages
 
-|            Package Name |      API Version      |
-| ----------------------: | :-------------------: |
-|               eventgrid |       2018-01-01      |
+| Package Name | API Version |
+| -----------: | :---------: |
+| containerservice | 2019-06-01 |
 
-## `v19.0.0`
+## `v36.1.0`
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| eventgrid | 2020-01-01-preview |
+
+## `v36.0.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| documentdb | 2019-08-01-preview |
+| machinelearningservices | 2019-11-01 |
+| managementgroups | 2019-11-01 |
+| policy | 2019-09-01 |
+| workspaces | 2019-10-01 |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| datafactory | 2018-06-01 |
+| hanaonazure | 2017-11-03-preview |
+| securityinsight | 2017-08-01-preview |
+| storage | 2019-06-01 |
+
+### BreakingChanges
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| authoring | luis |
+| network | 2019-04-01<br/>2019-06-01<br/>2019-07-01<br/>2019-08-01<br/>2019-09-01 |
+| serialconsole | 2018-05-01 |
+| signalr | 2018-10-01 |
+| sql | 2018-06-01-preview |
+| timeseriesinsights | 2018-08-15-preview |
 
 ### Removed Packages
 
-|            Package Name |      API Version      |
-| ----------------------: | :-------------------: |
-|        servermanagement | 2015-07-01-preview<br/>2016-07-01-preview |
+| Package Name | API Version |
+| -----------: | :---------: |
+| documentdb | 2019-08-01-preview |
 
-### Breaking Changes
+## `v35.1.0`
 
-|            Package Name |      API Version      |
-| ----------------------: | :-------------------: |
-|               authoring |          v2.0         |
-|              automation | 2015-10-31<br/>2017-05-15-preview<br/>2018-01-preview |
-|                  backup | 2016-12-01<br/>2017-07-01 |
-|             botservices |       2017-12-01      |
-|                 compute | 2015-06-15<br/>2016-03-30<br/>2017-03-30<br/>2017-12-01<br/>2018-04-01<br/>2016-04-30-preview |
-|          computervision |          v2.0         |
-|       containerregistry |       2017-10-01      |
-|               eventgrid |       2018-01-01      |
-|               hdinsight | 2018-06-01-preview |
-|                insights | 2017-05-01-preview<br/>2018-03-01 |
-|                 migrate |       2018-02-02      |
-|                 runtime |          v2.0         |
-|                     sql |   2017-03-01-preview  |
-|                     web |       2018-02-01      |
-
-### New Services
-
-|            Package Name |      API Version      |
-| ----------------------: | :-------------------: |
-|        alertsmanagement |   2018-05-05-preview  |
-|                 compute |       2018-06-01      |
-|          costmanagement |       2018-05-31      |
-|       servicefabricmesh |   2018-07-01-preview  |
-|            compute/skus |       2017-09-01      |
-
-### Updated Services
-
-|            Package Name |      API Version      |
-| ----------------------: | :-------------------: |
-|           apimanagement | 2018-01-01<br/>2018-06-01-preview |
-|       containerregistry |       2018-02-01      |
-|        containerservice |       2018-03-31      |
-|              management |   2018-03-01-preview  |
-
-## `v18.1.0`
-
-### New Services
-
-|            Package Name |      API Version      |
-| ----------------------: | :-------------------: |
-| cognitive services training | v2.1              |
-|             consumption |      2018-06-30       |
-
-### Updated Services
-
-|            Package Name |      API Version      |
-| ----------------------: | :-------------------: |
-|               hdinsight | 2015-03-01-preview<br/>2018-06-01-preview |
-|              postgresql |      2017-12-01       |
-|               resources |      2018-05-01       |
-|                  search |      2015-08-19       |
-
-## `v18.0.0`
-
-### New Services
-
-|            Package Name |      API Version      |
-| ----------------------: | :-------------------: |
-|           apimanagement |  2018-06-01-preview   |
-|               hdinsight |  2018-06-01-preview   |
-|          computervision |         v2.0          |
-| recoveryservices/backup |      2016-12-01       |
-|         storagedatalake |      2018-06-17       |
-|               devspaces |  2018-06-01-preview   |
-|              automation |  2017-05-15-preview   |
-|                keyvault | v7.0 <br/> 2018-02-14 |
-|              automation |    2018-01-preview    |
-|                   media |  2018-06-01-preview   |
-|             datafactory |      2018-06-01       |
-
-### Updates Services
-
-|   Package Name |            API Version             |
-| -------------: | :--------------------------------: |
-|           face |                v1.0                |
-| luis/authoring |                v2.0                |
-|   luis/runtime |                v2.0                |
-|  textanalytics |                v2.0                |
-|       eventhub | 2017-04-01 <br/>2018-01-01-preview |
-|        monitor |         2017-05-01-preview         |
-|        signalr |         2018-03-01-preview         |
-|            sql |         2017-10-01-preview         |
-|        storage | 2018-03-01-preview <br/>2018-02-01 |
-|     servicebus |             2017-04-01             |
-
-### Breaking Changes
-
-|            Package Name |      API Version      |
-| ----------------------: | :-------------------: |
-|   adhybridhealthservice |      2014-01-01       |
-|                 advisor |      2017-04-19       |
-|             appinsights |  2015-05-01 <br/> v1  |
-|              automation | 2015-10-31/automation |
-|                 batchai |  2018-05-01/batchai   |
-|          computervision |         v1.0          |
-|             consumption |      2018-05-31       |
-|                 network |      2018-04-01       |
-|     operationalinsights |   2015-03-20<br/>v1   |
-| recoveryservices/backup |      2017-07-01       |
-|            reservations |      2018-06-01       |
-
-## `v17.4.0`
-
-### New Services
-
-|     Package Name | API Version |
-| ---------------: | :---------: |
-|      autosuggest |    v1.0     |
-| containerservice | 2018-03-31  |
-
-### Updated Services
-
-|     Package Name |                API Version                |
-| ---------------: | :---------------------------------------: |
-|      consumption |                2018-05-31                 |
-|       documentdb |                2015-04-08                 |
-|          network | 2018-02-01<br/>2018-04-01<br/>2018-05-01  |
-| notificationhubs |                2017-04-01                 |
-|              sql | 2017-03-01-preview<br/>2017-10-01-preview |
-
-## `v17.3.1`
-
-### Updated Services
-
-|  Package Name |                                      API Version                                      |
-| ------------: | :-----------------------------------------------------------------------------------: |
-|       network | 2017-10-01<br/>2017-11-01<br/>2018-01-01<br/>2018-02-01<br/>2018-04-01<br/>2018-05-01 |
-| servicefabric |                              5.6<br/>6.0<br/>6.1<br/>6.2                              |
-
-## `v17.3.0`
-
-### New Services
-
-|      Package Name | API Version |
-| ----------------: | :---------: |
-| containerinstance | 2018-06-01  |
-|      reservations | 2018-06-01  |
-
-### Updated Services
+### New Packages
 
 | Package Name | API Version |
 | -----------: | :---------: |
-|  datafactory | 2017-09-01  |
-|      network | 2015-06-15  |
+| documentdb | 2019-08-01<br/>2019-08-01-preview |
 
-## `v17.2.0`
+## `v35.0.0`
 
-### New Services
+### New Packages
 
-|        Package Name | API Version |
-| ------------------: | :---------: |
-| managedapplications | 2018-06-01  |
-|           resources | 2018-05-01  |
+| Package Name | API Version |
+| -----------: | :---------: |
+| appconfiguration | 2019-10-01 |
+| authoring | luis |
+| containerservice | 2019-09-30-preview<br/>2019-10-01 |
+| costmanagement | 2019-10-01<br/>2019-10-01 |
+| datashare | 2019-11-01 |
+| hybridcompute | 2019-03-18-preview |
+| peering | 2019-09-01-preview |
+| policyinsights | 2019-10-01 |
+| storagecache | 2019-11-01 |
+| training | customvision |
 
-### Updated Services
+### Updated Packages
 
-|         Package Name | API Version |
-| -------------------: | :---------: |
-| networksecuritygroup |   classic   |
+| Package Name | API Version |
+| -----------: | :---------: |
+| advisor | 2017-03-31<br/>2017-04-19 |
+| apimanagement | 2019-01-01 |
+| compute | 2018-10-01 |
+| containerservice | 2019-08-01 |
+| datafactory | 2017-09-01-preview |
+| eventgrid | 2018-01-01 |
+| eventhub | 2018-01-01-preview |
+| maps | 2017-01-01-preview |
+| mysql | 2017-12-01-preview |
+| postgresql | 2017-12-01-preview |
+| qnamakerruntime | v4.0 |
+| sqlvirtualmachine | 2017-03-01-preview |
+| web | 2018-02-01 |
 
-## `v17.1.0`
+### BreakingChanges
 
-### New Services
+| Package Name | API Version |
+| -----------: | :---------: |
+| aad | 2017-01-01<br/>2017-06-01 |
+| appplatform | 2019-05-01-preview |
+| backup | 2016-12-01<br/>2017-07-01 |
+| cdn | 2019-04-15 |
+| cognitiveservices | 2017-04-18 |
+| compute | 2019-03-01<br/>2019-07-01 |
+| containerregistry | 2017-10-01<br/>2018-02-01<br/>2018-09-01 |
+| datafactory | 2018-06-01 |
+| datashare | 2018-11-01-preview |
+| hdinsight | 2015-03-01-preview<br/>2018-06-01-preview |
+| operationalinsights | 2015-03-20 |
+| reservations | 2019-04-01 |
+| security | v3.0 |
+| servicebus | 2017-04-01 |
+| sql | 2014-04-01 |
+| storage | 2019-04-01 |
+| vmwarecloudsimple | 2019-04-01 |
+| web | 2019-08-01 |
 
-| Package Name |        API Version        |
-| -----------: | :-----------------------: |
-|   iotcentral | 2017-07-01-privatepreview |
+### Removed Packages
 
-## `v17.0.0`
+| Package Name | API Version |
+| -----------: | :---------: |
+| sql | 2018-06-15-preview |
 
-### New Services
+## `v34.4.0`
 
-|          Package Name |     API Version     |
-| --------------------: | :-----------------: |
-|               batchai |     2018-05-01      |
-| adhybridhealthservice |     2014-01-01      |
-|           consumption |     2018-05-31      |
-|     customimagesearch |        v1.0         |
-|        luis/authoring |        v2.0         |
-|            management | 2018-03-01-preview  |
-|                  maps | 2017-01-01-preview  |
-|                  maps |     2018-05-01      |
-|               network |     2018-05-01      |
-|                policy |     "2018-03-01     |
-|         servicefabric |     "2018-02-01     |
-|              services | "2018-03-01-preview |
-|               storage | 2018-03-01-preview  |
-|        trafficmanager |     2018-02-01      |
-|            workspaces |     2016-04-01      |
+### New Packages
 
-### Updated Services
+| Package Name | API Version |
+| -----------: | :---------: |
+| eventgrid | 2020-01-01-preview |
+| sql | 2018-06-15-preview |
 
-|        Package Name |    API Version     |
-| ------------------: | :----------------: |
-|                 aad |     2017-01-01     |
-|                 aad |     2017-06-01     |
-|             account |     2016-11-01     |
-|             advisor |     2017-04-19     |
-|    analysisservices |     2016-05-16     |
-|    analysisservices |     2017-07-14     |
-|    analysisservices |     2017-08-01     |
-|       apimanagement |     2016-07-07     |
-|       apimanagement |     2016-10-10     |
-|       apimanagement |     2017-03-01     |
-|       apimanagement |     2018-01-01     |
-|               batch |     2015-12-01     |
-|               batch |     2017-01-01     |
-|               batch |     2017-05-01     |
-|               batch |     2017-09-01     |
-|             batchai |     2018-03-01     |
-|             batchai |     2018-05-01     |
-|         botservices |     2017-12-01     |
-|             catalog | 2016-11-01-preview |
-|                 cdn |     2015-06-01     |
-|                 cdn |     2016-04-02     |
-|                 cdn |     2016-10-02     |
-|                 cdn |     2017-04-02     |
-|                 cdn |     2017-10-12     |
-|             compute |     2015-06-15     |
-|             compute |     2016-03-30     |
-|             compute |     2017-03-30     |
-|             compute |     2018-04-01     |
-|      computervision |        v1.0        |
-|         consumption |     2018-03-31     |
-|   containerinstance |     2018-04-01     |
-|   containerregistry |     2017-03-01     |
-|   containerregistry |     2017-10-01     |
-|   containerregistry |     2018-02-01     |
-|    containerservice |     2016-03-30     |
-|    containerservice |     2016-09-30     |
-|    containerservice |     2017-01-31     |
-|    containerservice |     2017-07-01     |
-|    containerservice |     2017-08-31     |
-|    containerservice |     2017-09-30     |
-|    customerinsights |     2017-01-01     |
-|    customerinsights |     2017-04-26     |
-|             databox |     2018-01-01     |
-|          databricks |     2018-04-01     |
-|         datacatalog |     2016-03-30     |
-|         datafactory | 2017-09-01-preview |
-|       datamigration | 2018-03-31-preview |
-|             devices |     2016-02-03     |
-|             devices |     2017-01-19     |
-|             devices |     2017-07-01     |
-|             devices |     2018-01-22     |
-|             devices |     2018-04-01     |
-|                 dns |     2016-04-01     |
-|                 dns |     2017-09-01     |
-|                 dns |     2017-10-01     |
-|          documentdb |     2015-04-08     |
-|                 dtl |     2016-05-15     |
-|           eventgrid |     2018-01-01     |
-|           eventgrid | 2018-05-01-preview |
-|            eventhub |     2015-08-01     |
-|            eventhub |     2017-04-01     |
-|            eventhub | 2018-01-01-preview |
-|            insights |     2015-05-01     |
-|              iothub | 2017-08-21-preview |
-|              iothub |     2017-11-15     |
-|              iothub |     2018-01-22     |
-|           iotspaces | 2017-10-01-preview |
-|               logic |     2016-06-01     |
+## `v34.3.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| network | 2019-09-01 |
+| runtime | luis |
+| storage | 2019-06-01 |
+
+### BreakingChanges
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| datamigration | 2018-07-15-preview |
+
+### Removed Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| runtime | luis |
+
+## `v34.2.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| appplatform | 2019-05-01-preview |
+| web | 2019-08-01 |
+
+## `v34.1.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| features | 2019-07-01 |
+| network | 2019-08-01 |
+| affinitygroup | management |
+| auth | keyvault |
+| hostedservice | management |
+| location | management |
+| mongodb | cosmos-db |
+| networksecuritygroup | management |
+| osimage | management |
+| programmatic | luis |
+| sql | management |
+| storageservice | management |
+| testutils | management |
+| virtualmachine | management |
+| virtualmachinedisk | management |
+| virtualmachineimage | management |
+| virtualnetwork | management |
+| vmutils | management |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| compute | 2019-03-01<br/>2019-07-01 |
+
+Revert deletion of packages in `classic\management` and `keyvault\auth` 
+
+## `v34.0.0`
+
+### New Packages                                                                                                                              
+| Package Name | API Version |
+| -----------: | :---------: |
+| databox | 2019-09-01 |
+| databoxedge | 2019-03-01<br/>2019-07-01 |
+| frontdoor | 2019-04-01<br/>2019-05-01 |
+| healthcareapis | 2019-09-16 |
+| kusto | 2019-09-07 |
+| logic | 2019-05-01 |
+| maintenance | 2018-06-01-preview |
+| storagedatalake | 2019-10-31 |
+| subscriptions | 2019-06-01 |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| appconfiguration | 2019-02-01-preview |
+| datashare | 2018-11-01-preview |
+| eventgrid | 2018-01-01 |
+| eventhub | 2017-04-01 |
+| kusto | 2019-05-15 |
+| network | 2018-07-01<br/>2018-08-01<br/>2018-10-01<br/>2018-11-01<br/>2018-12-01<br/>2019-02-01 |
+| servicebus | 2017-04-01 |
+| sql | 2015-05-01-preview<br/>2017-03-01-preview |
+
+### BreakingChanges
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| apimanagement | 2019-01-01 |
+| compute | 2016-03-30<br/>2017-03-30<br/>2017-12-01<br/>2018-04-01<br/>2018-06-01<br/>2018-10-01<br/>2019-03-01<br/>2019-07-01 |
+| containerregistry | 2019-05-01-preview<br/>2019-06-01-preview |
+| containerservice | 2019-06-01<br/>2019-08-01 |
+| datafactory | 2018-06-01 |
+| datamigration | 2018-03-31-preview<br/>2018-04-19<br/>2018-07-15-preview |
+| documentdb | 2015-04-08 |
+| frontdoor | 2018-08-01-preview |
+| machinelearningservices | 2019-06-01 |
+| managednetwork | 2019-06-01-preview |
+| network | 2019-04-01 |
+| reservations | 2019-04-01 |
+| security | v1.0<br/>v2.0<br/>v3.0 |
+| securityinsight | 2017-08-01-preview |
+| storage | 2019-04-01 |
+
+### Removed Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| affinitygroup | management |
+| anomalyfinder | v2.0 |
+| auth | keyvault |
+| batch | 2015-12-01.2.2<br/>2016-02-01.3.0<br/>2016-07-01.3.1<br/>2017-01-01.4.0<br/>2017-06-01.5.1<br/>2017-09-01.6.0 |
+| computervision | v1.0 |
+| devspaces | 2018-06-01-preview<br/>2019-01-01-preview |
+| edgegateway | 2019-03-01 |
+| frontdoor | preview/2019-04-01<br/>preview/2019-05-01 |
+| hostedservice | management |
+| insights | v1 |
+| location | management |
+| mobileengagement | 2014-12-01 |
+| mongodb | cosmos-db |
+| networksecuritygroup | management |
+| osimage | management |
+| peering | 2019-03-01-preview |
+| portal | 2015-11-01-preview |
+| programmatic | luis |
+| servicefabric | 2019-03-01 |
+| services | 2018-03-01-preview |
+| sql | management |
+| storageservice | management |
+| testutils | management |
+| virtualmachine | management |
+| virtualmachinedisk | management |
+| virtualmachineimage | management |
+| virtualnetwork | management |
+| vmutils | management |
+
+## `v33.4.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| netapp | 2019-07-01 |
+
+## `v33.3.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| network | 2019-07-01 |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| network | 2019-06-01 |
+
+### BreakingChanges
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| sql | 2017-10-01-preview<br/>2018-06-01-preview |
+
+## `v33.2.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| sql | 2018-06-01-preview |
+
+## `v33.1.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| storagecache | 2019-08-01-preview |
+
+## `v33.0.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| batch | 2019-08-01<br/>2019-08-01.10.0 |
+| computervision | v2.1 |
+| containerregistry | 2019-07 |
+| containerservice | 2019-08-01 |
+| frontdoor | 2019-05-01 |
+| machinelearningservices | 2019-06-01 |
+| managednetwork | 2019-06-01-preview |
+| peering | 2019-08-01-preview |
+| policy | 2019-06-01 |
+| portal | 2018-10-01-preview |
+| servicefabric | 2019-03-01-preview |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| backup | 2016-12-01<br/>2017-07-01 |
+| frontdoor | 2019-04-01 |
+| logic | 2016-06-01<br/>2018-07-01-preview |
+| network | 2018-07-01<br/>2018-08-01<br/>2018-10-01<br/>2018-11-01<br/>2018-12-01 |
+| resources | 2015-11-01<br/>2016-02-01<br/>2016-07-01<br/>2016-09-01<br/>2017-05-10<br/>2018-02-01<br/>2018-05-01<br/>2019-03-01<br/>2019-05-01 |
+| security | v2.0 |
+| sql | 2015-05-01-preview<br/>2017-03-01-preview<br/>2017-10-01-preview |
+| storage | 2019-04-01 |
+
+### BreakingChanges
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| billing | 2018-11-01-preview |
+| compute | 2019-03-01<br/>2019-07-01 |
+| datafactory | 2018-06-01 |
+| datamigration | 2017-11-15-preview<br/>2018-03-31-preview<br/>2018-04-19<br/>2018-07-15-preview |
+| hanaonazure | 2017-11-03-preview |
+| healthcareapis | 2018-08-20-preview |
+| inkrecognizer | v1.0 |
+| insights | 2015-05-01 |
+| kusto | 2019-01-21 |
+| network | 2019-02-01<br/>2019-04-01<br/>2019-06-01 |
+| qnamaker | v4.0 |
+| reservations | 2019-04-01 |
+| security | v3.0 |
+| securityinsight | 2017-08-01-preview |
+| servicefabric | 2019-03-01 |
+
+## `v32.6.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| kusto | 2019-05-15 |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| datalake | 2018-06-17 |
+
+## `v32.5.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| servicebus | 2018-01-01-preview |
+
+## `v32.4.0`
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| datamigration | 2018-07-15-preview |
+
+## `v32.3.0`
+
+### BreakingChanges
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| subscription | 2018-03-01-preview |
+
+## `v32.2.0`
+
+### BreakingChanges
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| hdinsight | 2015-03-01-preview<br/>2018-06-01-preview |
+
+## `v32.1.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| qnamakerruntime | v4.0 |
+
+### Fixed a bug with the table query continuation token in the ./storage package.
+
+## `v32.0.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| aad | 2017-04-01 |
+| compute | 2019-07-01 |
+| datashare | 2018-11-01-preview |
+| devops | 2019-07-01-preview |
+| enterpriseknowledgegraphservice | 2018-12-03 |
+| managedservices | 2019-06-01 |
+| migrate | 2018-09-01-preview |
+| mysql | 2017-12-01-preview |
+| network | 2019-06-01 |
+| policy | 2019-01-01 |
+| portal | 2015-08-01-preview<br/>2019-01-01-preview |
+| postgresql | 2017-12-01-preview |
+| windowsiot | 2019-06-01 |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| alertsmanagement | 2019-05-05 |
+| authoring | luis |
+| cdn | 2019-04-15 |
+| datafactory | 2017-09-01-preview |
+| datamigration | 2018-07-15-preview |
+| devices | 2019-03-22-preview |
+| hanaonazure | 2017-11-03-preview |
+| signalr | 2018-10-01 |
+| subscriptions | 2018-06-01 |
+
+### BreakingChanges
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| compute | 2019-03-01 |
+| contentmoderator | v1.0 |
+| datafactory | 2018-06-01 |
+| documentdb | 2015-04-08 |
+| dtl | 2018-09-15 |
+| healthcareapis | 2018-08-20-preview |
+| insights | 2018-03-01<br/>2018-09-01<br/>2018-11-01-preview<br/>2019-03-01<br/>2019-06-01 |
+| machinelearningservices | 2019-05-01 |
+| managedservices | 2018-06-01 |
+| network | 2019-04-01 |
+| reservations | 2019-04-01 |
+| security | v1.0<br/>v2.0<br/>v3.0 |
+| securityinsight | 2017-08-01-preview |
+| storage | 2019-04-01 |
+
+## `v31.2.0`
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| apimanagement | 2019-01-01 |
+
+## `v31.1.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| alertsmanagement | 2019-03-01 |
+| authorization | 2018-07-01-preview |
+| batch | 2019-04-01 |
+| containerregistry | 2019-06-01-preview |
+| netapp | 2019-06-01 |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| alertsmanagement | 2018-05-05-preview |
+| hdinsight | 2015-03-01-preview<br/>2018-06-01-preview |
+| sqlvirtualmachine | 2017-03-01-preview |
+
+## `v31.0.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| alertsmanagement | 2019-05-05 |
+| appconfiguration | 2019-02-01-preview |
+| cdn | 2019-06-15-preview |
+| containerservice | 2019-06-01 |
+| insights | 2019-06-01 |
+| machinelearningservices | 2018-03-01-preview<br/>2018-11-19<br/>2019-05-01 |
+| network | 2019-04-01 |
+| resources | 2019-05-01 |
+| servicefabric | 6.5 |
+| softwareplan | 2019-06-01-preview |
+| vmwarecloudsimple | 2019-04-01 |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| cognitiveservices | 2017-04-18 |
+| compute | 2019-03-01 |
+| containerregistry | 2019-04-01<br/>2019-05-01 |
+| hanaonazure | 2017-11-03-preview |
+| hdinsight | 2015-03-01-preview<br/>2018-06-01-preview |
+| insights | 2017-05-01-preview<br/>2018-03-01<br/>2018-09-01<br/>2018-11-01-preview<br/>2019-03-01 |
+| managementgroups | 2018-03-01-preview |
+| media | 2018-07-01 |
+
+### BreakingChanges
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| alertsmanagement | 2018-05-05 |
+| authorization | 2015-07-01 |
+| billing | 2018-11-01-preview |
+| blueprint | 2018-11-01-preview |
+| computervision | v2.0 |
+| datafactory | 2017-09-01-preview<br/>2018-06-01 |
+| eventgrid | 2018-01-01 |
+| eventhub | 2015-08-01<br/>2018-01-01-preview |
+| face | v1.0 |
+| netapp | 2019-05-01 |
+| network | 2015-06-15<br/>2016-09-01<br/>2016-12-01<br/>2017-03-01<br/>2017-06-01<br/>2017-08-01<br/>2017-09-01<br/>2017-10-01<br/>2017-11-01<br/>2018-01-01<br/>2018-02-01<br/>2018-04-01<br/>2018-06-01<br/>2018-07-01<br/>2018-08-01<br/>2018-10-01<br/>2018-11-01<br/>2018-12-01<br/>2019-02-01 |
+| reservations | 2019-04-01 |
+| resourcegraph | 2019-04-01 |
+| securityinsight | 2017-08-01-preview |
+| sql | 2015-05-01-preview<br/>2017-03-01-preview |
+| storage | 2019-04-01 |
+
+## `v30.1.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| batch | 2019-06-01.9.0 |
+| managedservices | 2019-04-01 |
+| personalizer | v1.0 |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| authorization | 2017-10-01-preview<br/>2018-01-01-preview<br/>2018-09-01-preview |
+| automation | 2015-10-31<br/>2017-05-15-preview<br/>2018-01-15-preview<br/>2018-06-30-preview |
+| datafactory | 2018-06-01 |
+| datamigration | 2018-07-15-preview |
+| documentdb | 2015-04-08 |
+| formrecognizer | v1.0 |
+| hanaonazure | 2017-11-03-preview |
+| hdinsight | 2018-06-01-preview |
+| postgresql | 2017-12-01 |
+| qnamaker | v4.0 |
+| signalr | 2018-10-01 |
+
+## `v30.0.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| blockchain | 2018-06-01-preview |
+| containerregistry | 2019-05-01<br/>2019-05-01-preview |
+| costmanagement | 2019-03-01 |
+| devices | 2019-03-22-preview |
+| devspaces | 2019-04-01 |
+| dns | 2018-05-01 |
+| eventgrid | 2019-06-01 |
+| security | v3.0 |
+| servicefabric | 2019-03-01<br/>2019-03-01 |
+
+### Updated Packages
+
+| account | 2016-11-01 |
+| advisor | 2017-04-19 |
+| billing | 2018-11-01-preview |
+| cdn | 2019-04-15 |
+| cognitiveservices | 2017-04-18 |
+| customproviders | 2018-09-01-preview |
+| datafactory | 2018-06-01 |
+| devices | 2018-12-01-preview |
+| eventgrid | 2018-01-01 |
+| hanaonazure | 2017-11-03-preview |
+| kusto | 2019-01-21 |
+| managementpartner | 2018-02-01 |
+| mariadb | 2018-06-01 |
+| mysql | 2017-12-01 |
+| network | 2019-02-01 |
+| operationsmanagement | 2015-11-01-preview |
+| postgresql | 2017-12-01 |
+| servicefabric | 2016-09-01 |
+| web | 2018-02-01 |
+
+### BreakingChanges
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| analysisservices | 2017-08-01 |
+| authoring | luis |
+| automation | 2018-01-15-preview<br/>2018-06-30-preview |
+| blueprint | 2018-11-01-preview |
+| compute | 2017-12-01 |
+| computervision | v2.0 |
+| contentmoderator | v1.0 |
+| documentdb | 2015-04-08 |
+| insights | 2015-05-01 |
+| netapp | 2019-05-01 |
+| resources | 2018-05-01 |
+| security | v1.0<br/>v2.0 |
+| servicefabric | 2017-07-01-preview<br/>2018-02-01 |
+| spellcheck | v1.0 |
+| subscriptions | 2016-06-01 |
+
+## `v29.0.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| cdn | 2019-04-15 |
+| customproviders | 2018-09-01-preview |
+| formrecognizer | v1.0 |
+| inkrecognizer | v1.0 |
+| portal | 2015-11-01-preview |
+| runtime | luis |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| insights | 2018-03-01<br/>2018-09-01<br/>2018-11-01-preview<br/>2019-03-01 |
+| locks | 2016-09-01 |
+| sql | 2014-04-01<br/>2017-10-01-preview |
+
+### BreakingChanges
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| apimanagement | 2019-01-01 |
+| containerservice | 2019-04-30 |
+| graphrbac | 1.6 |
+| sql | 2015-05-01-preview<br/>2017-03-01-preview |
+| storage | 2019-04-01 |
+
+## `v28.1.0`
+
+Fixed build issue in legacy storage package affecting some consumers.
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| resourcegraph | 2018-09-01 |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| eventhub | 2018-01-01-preview |
+
+## `v28.0.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| containerregistry | 2019-04-01 |
+| containerservice | 2019-04-30 |
+| hybriddata | 2016-06-01 |
+| netapp | 2019-05-01 |
+| network | 2019-02-01 |
+| resources | 2019-03-01 |
+| serialconsole | 2018-05-01 |
+| storage | 2019-04-01 |
+| subscriptions | 2018-06-01 |
+| virtualmachineimagebuilder | 2019-05-01-preview |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| cognitiveservices | 2017-04-18 |
+| consumption | 2019-01-01 |
+| costmanagement | 2019-01-01 |
+| datafactory | 2018-06-01 |
+| eventgrid | 2018-01-01 |
+| iotcentral | 2018-09-01 |
+| qnamaker | v4.0 |
+| sql | 2017-10-01-preview |
+
+### BreakingChanges
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| apimanagement | 2018-06-01-preview<br/>2019-01-01 |
+| billing | 2018-11-01-preview |
+| compute | 2019-03-01 |
+| cosmos-db | 2015-04-08 |
+| documentdb | 2015-04-08 |
+| hanaonazure | 2017-11-03-preview |
+| insights | 2018-03-01<br/>2018-09-01<br/>2018-11-01-preview<br/>2019-03-01 |
+| mysql | 2017-12-01 |
+| network | 2017-06-01<br/>2017-08-01<br/>2017-09-01<br/>2017-10-01<br/>2017-11-01<br/>2018-01-01<br/>2018-02-01<br/>2018-04-01<br/>2018-06-01<br/>2018-07-01<br/>2018-08-01<br/>2018-10-01<br/>2018-11-01<br/>2018-12-01 |
+| operationalinsights | 2015-11-01-preview |
+| policyinsights | 2018-07-01-preview |
+| postgresql | 2017-12-01 |
+| resources | 2018-05-01 |
+| runtime | luis |
+| sql | 2015-05-01-preview<br/>2017-03-01-preview |
+| storagedatalake | 2018-11-09 |
+| subscriptions | 2016-06-01 |
+| virtualmachineimagebuilder | 2019-02-01-preview |
+| web | 2018-02-01 |
+
+### Removed Packages (duplicates)
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| automation | 2017-05-15-preview |
+| compute | 2017-06-01-preview |
+| devices | 2018-12-01-preview |
+| fabric | 2016-05-01 |
+| infrastructureinsights | 2016-05-01 |
+| mariadb | 2018-06-01-preview |
+| postgresql | 2017-04-30-preview<br/>2017-12-01-preview |
+| reservations | 2018-06-01 |
+| storagesync | 2018-10-01 |
+
+## `v27.3.0`
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| anomalydetector | v1.0 |
+
+### Breaking Changes - Preview Only
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| hanaonazure | 2017-11-03-preview |
+
+## `v27.2.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| apimanagement | 2019-01-01 |
+| reservations | 2019-04-01 |
+
+## `v27.1.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| compute | 2019-03-01 |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| cdn | 2017-10-12 |
+| compute | 2018-10-01 |
+| containerservice | 2018-08-01-preview<br/>2018-09-30-preview<br/>2019-02-01 |
+| datafactory | 2018-06-01 |
+| hdinsight | 2018-06-01-preview |
+| postgresql | 2017-12-01 |
+| recoveryservices | 2016-06-01 |
+| security | v1.0<br/>v2.0 |
+| securityinsight | 2017-08-01-preview |
+| storage | 2018-02-01<br/>2018-03-01-preview<br/>2018-07-01<br/>2018-11-01 |
+
+### Breaking Changes - Preview Only
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| hdinsight | 2015-03-01-preview |
+
+## `v27.0.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| billing | 2018-11-01-preview |
+| frontdoor | 2019-04-01 |
+| healthcareapis | 2018-08-20-preview |
+| managedservices | 2018-06-01 |
+| peering | 2019-03-01-preview |
+| resourcegraph | 2019-04-01 |
+| storagesync | 2019-02-01 |
+| virtualmachineimagebuilder | 2018-02-01-preview<br/>2019-02-01-preview |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| adhybridhealthservice | 2014-01-01 |
+| catalog | 2016-11-01-preview |
+| containerregistry | 2017-10-01<br/>2018-02-01<br/>2018-09-01 |
+| eventgrid | 2018-01-01 |
+| eventhub | 2017-04-01 |
+| hanaonazure | 2017-11-03-preview |
+| mysql | 2017-12-01 |
+| postgresql | 2017-12-01 |
+| security | v1.0<br/>v2.0 |
+| servicebus | 2017-04-01 |
+| signalr | 2018-10-01 |
+| sql | 2017-03-01-preview |
+| storage | 2018-11-01 |
+
+### BreakingChanges
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| apimanagement | 2018-06-01-preview |
+| authoring | luis |
+| blueprint | 2018-11-01-preview |
+| cdn | 2017-10-12 |
+| compute | 2018-10-01 |
+| computervision | v2.0 |
+| datafactory | 2017-09-01-preview<br/>2018-06-01 |
+| devices | 2018-12-01-preview |
+| edgegateway | 2019-03-01 |
+| face | v1.0 |
+| graphrbac | 1.6 |
+| insights | 2018-03-01 |
+| postgresqlapi | postgresql |
+| search | 2015-08-19 |
+| web | 2018-02-01 |
+| webservices | 2017-01-01 |
+
+## `v26.7.0`
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| training | v3.0 |
+
+## `v26.6.0`
+
+## New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| prediction | v3.0 |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| marketplaceordering | 2015-06-01 |
+| media | 2018-07-01 |
+
+### Breaking Changes - Preview
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| netapp | 2017-08-15 |
+
+## `v26.5.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| anomalydetector | v1.0 |
+| containerservice | 2019-02-01 |
+| storage | 2018-11-01 |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| network | 2018-12-01 |
+
+## `v26.4.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| insights | 2019-03-01 |
+
+## `v26.3.1`
+
+Remove committed vendored content.
+
+## `v26.3.0`
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| eventgrid | 2019-02-01-preview |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| marketplaceordering | 2015-06-01 |
+
+## `v26.2.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| mariadb | 2018-06-01 |
+| netapp | 2017-08-15 |
+| security | v2.0 |
+| translatortext | v3.0 |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| sql | 2015-05-01-preview<br/>2017-03-01-preview |
+
+### Moved Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| security | 2017-08-01-preview -> v1.0 |
+
+## `v26.1.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| mixedreality | 2019-02-28 |
+| trafficmanager | 2018-04-01 |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| mysql | 2017-12-01 |
+| postgresql | 2017-12-01 |
+| search | 2015-08-19 |
+
+## `v26.0.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| anomalyfinder | v2.0 |
+| blueprint | 2018-11-01-preview |
+| costmanagement | 2019-01-01 |
+| devspaces | 2019-01-01-preview |
+| edgegateway | 2019-03-01 |
+| network | 2018-12-01 |
+| privatedns | 2018-09-01 |
+
+### Updated Packages
+
+| Package Name | API Version |
+| commitmentplans | 2016-05-01-preview |
+| computervision | v2.0 |
+| consumption | 2018-10-01 |
+| hanaonazure | 2017-11-03-preview |
+| operationalinsights | 2015-03-20 |
+| webapi | web |
+
+### BreakingChanges
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| containerservice | 2018-03-31<br/>2018-08-01-preview<br/>2018-09-30-preview |
+| costmanagement | 2018-08-01-preview |
+| datafactory | 2018-06-01 |
+| eventgrid | 2018-01-01 |
+| face | v1.0 |
+| kusto | 2019-01-21 |
+| policyinsights | 2018-07-01-preview |
+| security | 2017-08-01-preview |
+| securityinsight | 2017-08-01-preview |
+| sql | 2015-05-01-preview<br/>2017-03-01-preview |
+| storagedatalake | 2018-11-09 |
+| textanalytics | v2.1 |
+| web | 2018-02-01 |
+
+### Removed Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| blueprint | 2017-11-11-preview |
+| edgegateway | 2018-07-01 |
+
+## `v25.1.0`
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| consumption | 2019-01-01 |
+| kusto | 2019-01-21 |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| authorization | 2015-07-01 |
+| backup | 2017-07-01 |
+| compute | 2018-10-01 |
+| eventgrid | 2018-01-01 |
+| eventhub | 2017-04-01 |
+| sql | 2017-03-01-preview |
+
+## `v25.0.0`
+
+NOTE: Go 1.8 has been removed from CI due to a transitive dependency no longer supporting it.
+
+### New Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| devices | 2018-12-01-preview |
+| insights | 2018-11-01-preview |
+| securityinsight | 2017-08-01-preview |
+| storagedatalake | 2018-11-09 |
+
+### Updated Packages
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| cognitiveservices | 2017-04-18 |
+| containerregistry | 2018-09-01 |
+| eventgrid | 2018-01-01 |
+| hdinsight | 2015-03-01-preview<br/>2018-06-01-preview |
+| network | 2018-11-01 |
+| runtime | luis |
+| sql | 2015-05-01-preview<br/>2017-03-01-preview<br/>2017-10-01-preview |
+| web | 2018-02-01 |
+
+### BreakingChanges
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| adhybridhealthservice | 2014-01-01 |
+| backup | 2016-12-01<br/>2017-07-01 |
+| blueprint | 2017-11-11-preview |
+| containerservice | 2018-03-31<br/>2018-08-01-preview<br/>2018-09-30-preview |
+| datafactory | 2017-09-01-preview<br/>2018-06-01 |
+| face | v1.0 |
+| hanaonazure | 2017-11-03-preview |
+| insights | 2017-05-01-preview |
+| logic | 2018-07-01-preview |
+| security | 2017-08-01-preview |
+| storage | 2015-05-01-preview<br/>2015-06-15<br/>2016-01-01<br/>2016-05-01<br/>2016-12-01<br/>2017-06-01<br/>2017-10-01<br/>2018-02-01<br/>2018-03-01-preview<br/>2018-07-01 |
+| virtualmachine | management |
+
+### Removed Packages
+
+NOTE: Some removed packages are preview packages that were incorrectly placed in the stable location.  The copies under `preview` still exist.
+
+| Package Name | API Version |
+| -----------: | :---------: |
+| apimanagement | 2018-01-01 |
+| datafactory | 2017-09-01-preview |
+| dns | 2018-03-01-preview |
+| insights | 2017-09-01 |
+| iothub | 2017-08-21-preview |
 | managedapplications | 2016-09-01-preview |
-| managedapplications |     2017-09-01     |
-|          management | 2018-01-01-preview |
-|               media | 2018-03-30-preview |
-|               mysql |     2017-12-01     |
-|             network |     2015-06-15     |
-|             network |     2016-03-30     |
-|             network |     2016-06-01     |
-|             network |     2016-09-01     |
-|             network |     2016-12-01     |
-|             network |     2017-03-01     |
-|             network |     2017-06-01     |
-|             network |     2017-08-01     |
-|             network |     2017-09-01     |
-|             network |     2017-10-01     |
-|             network |     2017-11-01     |
-|             network |     2018-01-01     |
-|             network |     2018-02-01     |
-|             network |     2018-04-01     |
-|    notificationhubs |     2014-09-01     |
-|    notificationhubs |     2016-03-01     |
-|    notificationhubs |     2017-04-01     |
-| operationalinsights |     2015-03-20     |
-| operationalinsights |         v1         |
-|          postgresql |     2017-12-01     |
-|    powerbidedicated |     2017-10-01     |
-|     powerbiembedded |     2016-01-29     |
-|          prediction |    customvision    |
-|   luis/programmatic |        v2.0        |
-|               redis |     2016-04-01     |
-|               redis |     2017-02-01     |
-|               redis |     2017-10-01     |
-|               redis |     2018-03-01     |
-|               relay |     2016-07-01     |
-|               relay |     2017-04-01     |
-|        reservations |     2017-11-01     |
-|           resources |     2015-11-01     |
-|           resources |     2016-02-01     |
-|           resources |     2016-07-01     |
-|           resources |     2016-09-01     |
-|           resources |     2017-05-10     |
-|           resources |     2018-02-01     |
-|        luis/runtime |        v2.0        |
-|           scheduler |     2016-03-01     |
-|              search |     2015-08-19     |
-|    servermanagement | 2015-07-01-preview |
-|    servermanagement | 2016-07-01-preview |
-|          servicebus |     2015-08-01     |
-|          servicebus |     2017-04-01     |
-|       servicefabric |     2016-09-01     |
-|       servicefabric | 2017-07-01-preview |
-|             signalr | 2018-03-01-preview |
-|        siterecovery |     2016-08-10     |
-|        siterecovery |     2018-01-10     |
-|                 sql |     2014-04-01     |
-|                 sql | 2015-05-01-preview |
-|                 sql | 2017-03-01-preview |
-|                 sql | 2017-10-01-preview |
-|             storage | 2015-05-01-preview |
-|             storage |     2015-06-15     |
-|             storage |     2016-01-01     |
-|             storage |     2016-05-01     |
-|             storage |     2016-12-01     |
-|             storage |     2017-06-01     |
-|             storage |     2017-10-01     |
-|             storage |     2018-02-01     |
-|          storsimple |     2017-06-01     |
-|     streamanalytics |     2016-03-01     |
-|        subscription | 2017-11-01-preview |
-|        subscription | 2018-03-01-preview |
-|  timeseriesinsights | 2017-02-28-preview |
-|  timeseriesinsights |     2017-11-15     |
-|      trafficmanager |     2018-03-01     |
-|            training |    customvision    |
-|        visualstudio | 2014-04-01-preview |
-|                 web |  2015-08-preview   |
-|                 web |     2016-09-01     |
-|                 web |     2018-02-01     |
-|         webservices |     2017-01-01     |
+| managementpartner | 2018-02-01 |
+| policy | 2015-10-01-preview<br/>2017-06-01-preview |
+| servicefabric | 1.0.0<br/>5.6<br/>6.0<br/>6.1 |
+| storagedatalake | 2018-06-17<br/>2018-11-09 |
 
-## `v16.2.2`
+## `v24.1.0`
 
-### Updated Services
-
-| Package Name |    API Version     |
-| -----------: | :----------------: |
-|      signalr | 2018-03-01-preview |
-
-## `v16.2.1`
-
-### Updated Services
-
-| Package Name |        API Version        |
-| -----------: | :-----------------------: |
-|          web | 2016-09-01<br/>2018-02-01 |
-
-## `v16.2.0`
-
-### New Services
-
-|   Package Name |    API Version     |
-| -------------: | :----------------: |
-|      eventgrid | 2018-05-01-preview |
-| trafficmanager |     2018-03-01     |
-
-### Updated Services
-
-|  Package Name |        API Version        |
-| ------------: | :-----------------------: |
-|         redis | 2017-10-01<br/>2018-03-01 |
-| textanalytics |           v2.0            |
-|           web | 2016-09-01<br/>2018-02-01 |
-
-## `v16.1.0`
-
-- Added a `NewAuthorizerFromEnvironment()` function for the keyvault service.
-
-## `v16.0.0`
-
-### New Services
-
-|        Package Name |    API Version     |
-| ------------------: | :----------------: |
-|             batchai |     2018-05-01     |
-|         botservices |     2017-12-01     |
-|   containerinstance |     2018-04-01     |
-|   containerregistry |     2018-02-01     |
-|            keyvault |        v7.0        |
-| managedapplications |     2017-09-01     |
-|             network |     2018-04-01     |
-|      policyinsights |     2018-04-04     |
-|             signalr | 2018-03-01-preview |
-|             storage |     2018-02-0      |
-|        visualsearch |        v1.0        |
-|                 web |     2018-02-01     |
-
-### Updated Services
-
-|        Package Name |                           API Version                            |
-| ------------------: | :--------------------------------------------------------------: |
-|       apimanagement |                            2018-01-01                            |
-|          automation |                2015-10-31<br/>2017-05-15-preview                 |
-|             billing |                        2018-03-01-preview                        |
-|         botservices |                            2017-12-01                            |
-|             catalog |                        2016-11-01-preview                        |
-|   cognitiveservices |                            2017-04-18                            |
-|            commerce |                        2015-06-01-preview                        |
-|             compute |                            2018-04-01                            |
-|         consumption |                            2018-03-31                            |
-|    contentmoderator |                               v1.0                               |
-|         datafactory |                        2017-09-01-preview                        |
-|       datamigration |                        2017-11-15-preview                        |
-|            eventhub |                            2017-04-01                            |
-|            insights |                            2015-05-0                             |
-|              iothub |                            2017-11-15                            |
-|             network |                            2018-02-01                            |
-| operationalinsights |                2015-03-20<br/>2015-11-01-preview                 |
-|          servicebus |                            2017-04-01                            |
-|        siterecovery |                            2018-01-10                            |
-|                 sql | 2017-03-01-preview<br/>2017-10-01-preview<br/>2015-05-01-preview |
-|  timeseriesinsights |                            2017-11-15                            |
-|        luis/runtime |                               v2.0                               |
-|                 web |                            2016-09-01                            |
-
-## `v15.3.0`
-
-### New Services
-
-|  Package Name |    API Version     |
-| ------------: | :----------------: |
-|       databox |     2018-01-01     |
-|       devices |     2018-04-01     |
-|         media | 2018-03-30-preview |
-| servicefabric |        6.2         |
-
-### Updated Services
-
-|      Package Name |  API Version   |
-| ----------------: | :------------: |
-|     apimanagement |   2018-01-01   |
-|             batch | 2018-03-01.6.1 |
-| containerregistry |   2017-10-01   |
-|        documentdb |   2015-04-08   |
-|        servicebus |   2017-04-01   |
-
-## `v15.2.0`
-
-### New Services
+### New Packages
 
 | Package Name | API Version |
 | -----------: | :---------: |
-|       addons | 2017-05-15  |
-|       addons | 2018-03-01  |
+| edgegateway | 2018-07-01 |
+| network | 2018-11-01 |
+| storagesync | 2018-10-01 |
 
-### Updated Services
+### Updated Packages
 
-|  Package Name | API Version |
-| ------------: | :---------: |
-| apimanagement | 2017-03-01  |
-| apimanagement | 2018-01-01  |
-|      insights | 2015-05-01  |
+| Package Name | API Version |
+| -----------: | :---------: |
+| apimanagement | 2018-06-01-preview |
+| automation | 2017-05-15-preview<br/>2018-01-15-preview<br/>2018-06-30-preview |
+| classic | management |
+| containerservice | 2018-03-31<br/>2018-08-01-preview<br/>2018-09-30-preview |
+| hanaonazure | 2017-11-03-preview |
+| maps | 2018-05-01 |
 
-## `v15.1.1`
+## `v24.0.0`
 
-### Bug Fixes
+### New Packages
 
-- Drain the response body when retrying a request.
-- Avoid allocating when draining a response body.
+| Package Name | API Version |
+| -----------: | :---------: |
+| batch | 2018-12-01<br/>2018-12-01.8.0 |
+| devices | 2018-12-01-preview |
+| eventgrid | 2019-01-01 |
+| storagedatalake | 2018-06-17<br/>2018-11-09 |
 
-## `v15.1.0`
+### Updated Packages
 
-### New Services
+| Package Name | API Version |
+| -----------: | :---------: |
+| apimanagement | 2018-01-01<br/>2018-06-01-preview |
+| containerinstance | 2018-10-01 |
+| containerregistry | 2017-10-01<br/>2018-02-01<br/>2018-09-01 |
+| containerservice | 2018-08-01-preview<br/>2018-09-30-preview |
+| costmanagement | 2018-08-01-preview |
+| datafactory | 2018-06-01 |
+| eventhub | 2018-01-01-preview |
+| hanaonazure | 2017-11-03-preview |
+| hdinsight | 2018-11-01-preview |
+| network | 2018-10-01 |
+| resourcehealth | 2015-01-01<br/>2017-07-01 |
+| sql | 2017-03-01-preview |
+| storagesync | 2018-10-01 |
 
-|      Package Name |    API Version     |
-| ----------------: | :----------------: |
-|     datamigration | 2018-03-31-preview |
-|           devices |     2018-01-22     |
-|           network |     2018-02-01     |
-| cognitiveservices |    customvision    |
+### BreakingChanges
 
-## Updated Services
-
-| Package Name |                                  API Version                                   |
-| -----------: | :----------------------------------------------------------------------------: |
-|      compute | 2015-06-15<br/>2016-03-30<br/>2016-04-30-preview<br/>2017-03-30<br/>2018-04-01 |
-|  datafactory |                               2017-09-01-preview                               |
-|     insights |                                   2018-03-01                                   |
-|        mysql |                                   2017-12-01                                   |
-|   postgresql |                                   2017-12-01                                   |
-|          web |                                   2016-09-01                                   |
-
-## `v15.0.1`
-
-Fixing some build issues, and temporarily reverting CI.
-
-## `v15.0.0`
-
-NOTE: There is a new subdirectory, ./services/preview, which going forward will be used for segregating pre-GA packages.
-
-### New Features
-
-- Added helper func per enum type that returns a slice of all possible values for that type.
-
-### Bug Fixes
-
-- Removed the "arm-" prefix from user-agent strings as not all services are for ARM.
-- Fixed missing marshaller for structs with flattened fields.
-- Fixed an issue where the incorrect content MIME type was being specified.
-- Marshalling of empty values for enum types now works as expected.
-
-### New Services
-
-|   Package Name |                           API Version                            |
-| -------------: | :--------------------------------------------------------------: |
-|  apimanagement |                            2017-03-01                            |
-|     azurestack |                            2017-06-01                            |
-|        billing |                        2018-03-01-preview                        |
-|        compute |                            2018-04-01                            |
-|    consumption |                            2018-03-31                            |
-|     databricks |                            2018-04-01                            |
-|            dns |                            2017-10-01                            |
-|       insights |                            2018-03-01                            |
-|         iothub |                            2018-01-22                            |
-|      iotspaces |                        2017-10-01-preview                        |
-|     management |                        2018-01-01-preview                        |
-|        migrate |                            2018-02-02                            |
-| policyinsights | 2017-08-09-preview<br/>2017-10-17-preview<br/>2017-12-12-preview |
-|      resources |                            2018-02-01                            |
-|   siterecovery |                            2018-01-10                            |
-|            sql |                        2017-10-01-preview                        |
-
-### Breaking Changes
-
-|        Package Name |                API Version                 |
-| ------------------: | :----------------------------------------: |
-|          automation |             2017-05-15-preview             |
-|             advisor |                 2017-04-19                 |
-|   cognitiveservices |                 2017-04-18                 |
-|             compute |         2017-03-30<br/>2017-12-01          |
-|         consumption |                 2018-01-31                 |
-|   containerinstance |             2018-02-01-preview             |
-|    containerservice |         2017-08-31<br/>2017-09-30          |
-|        customsearch |                    v1.0                    |
-|         datafactory |             2017-09-01-preview             |
-|       datamigration |             2017-11-15-preview             |
-|                 dns |             2018-03-01-preview             |
-|        entitysearch |                    v1.0                    |
-|         imagesearch |                    v1.0                    |
-|            insights |             2017-05-01-preview             |
-|              iothub |                 2017-11-15                 |
-|          management | 2017-08-31-preview<br/>2017-11-01-preview  |
-|               mysql |             2017-12-01-preview             |
-|          newssearch |                    v1.0                    |
-| operationalinsights |                 2015-03-20                 |
-|          postgresql |             2017-12-01-preview             |
-|          servicebus |                 2015-08-01                 |
-|       servicefabric | 2017-07-01-preview<br/>5.6<br/>6.0<br/>6.1 |
-|          servicemap |             2015-11-01-preview             |
-|          spellcheck |                    v1.0                    |
-|  timeseriesinsights |     2017-02-28-preview<br/>2017-11-15      |
-|         videosearch |                    v1.0                    |
-|                 web |                 2016-09-01                 |
-|           websearch |                    v1.0                    |
-
-## `v14.6.0`
-
-### New Services
-
-- Batch 2018-03-01.6.1
-- BatchAI 2018-03-01
-- Cognitive services custom vision prediction v1.1
-- Eventhub 2018-01-01-preview
-- MySQL 2017-12-01
-- PostgreSQL 2017-12-01
-- Redis 2018-03-01
-- Subscription 2018-03-01-preview
-
-## `v14.5.0`
-
-### Changes
-
-- Added new preview packages for apimanagement and dns.
-
-## `v14.4.0`
-
-### Changes
-
-- Added new preview API versions for mysql and postgresql.
-
-## `v14.3.0`
-
-### Changes
-
-- Add exports for max file range and sizes for files in storage.
-- Updated README regarding blob storage support.
-- Add godoc indexer tool.
-- Add apidiff tool.
-
-## `v14.2.0`
-
-### Changes
-
-- For blob storage, added GetProperties() method to Container.
-- Added PublicAccess field to ContainerProperties struct.
-
-## `v14.1.1`
-
-- Fixing timestamp marshalling bug in the `storage` package.
-- Updating `profileBuilder` to clear-output folders when it is run by `go generate`.
-- Tweaking Swagger -> SDK config to use "latest" instead of "nightly" and be tied to a particular version of autorest.go.
-
-## `v14.1.0`
-
-### Changes
-
-- Update README with details on new authentication helpers.
-- Update `latest` profile to point to latest stable API versions.
-- Add new API version for Azure Monitoring service and for Batch Data plane service.
-
-## `v14.0.2`
-
-### Changes
-
-- Updating `profileBuilder list` to accept an `input` flag instead of reading from `stdin`.
-- Simplifying CI to have less chatter, be faster, and have no special cases.
-
-## `v14.0.1`
-
-### Changes
-
-- Removed the ./services/search/2016-09-01/search package, it was never intended to be included and doesn't work.
-
-## `v14.0.0`
-
-### Breaking Changes
-
-- Removed the ./arm, ./datalake-store and ./dataplane directories. You can find the same packages under ./services
-- The management package was moved to ./services/classic/management
-- Renamed package ./services/redis/mgmt/2017-10-01/cache to ./services/redis/mgmt/2017-10-01/redis
-
-### Changes
-
-- Removed the "-beta" suffix.
-- Added various new services.
-- Added ./version package for centralized SDK versioning.
+| Package Name | API Version |
+| -----------: | :---------: |
+| authoring | luis |
+| cognitiveservices | 2017-04-18 |
+| computervision | v2.0 |
+| datamigration | 2018-04-19<br/>2018-07-15-preview |
+| labservices | 2018-10-15 |
+| logic | 2018-07-01-preview |
+| media | 2018-07-01 |
+| siterecovery | 2018-01-10 |
+| sqlvirtualmachine | 2017-03-01-preview |
+| workloadmonitor | 2018-08-31-preview |
