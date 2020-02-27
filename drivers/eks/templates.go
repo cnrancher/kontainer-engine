@@ -527,7 +527,7 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              Service: ec2.amazonaws.com
+              Service: %s
             Action: sts:AssumeRole
       Path: "/"
       ManagedPolicyArns:
