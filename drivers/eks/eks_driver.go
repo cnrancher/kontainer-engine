@@ -17,6 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/client/metadata"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
@@ -58,6 +59,8 @@ var amiForRegionAndVersion = map[string]map[string]string{
 		"eu-north-1":     "ami-0c1dc1b58d2c9db01",
 		"me-south-1":     "ami-0a74adcd009625511",
 		"sa-east-1":      "ami-0ffbe64a5b32ed07b",
+		"cn-north-1":     "ami-05116e21a6cde5519",
+		"cn-northwest-1": "ami-0c46a6b27dcf80699",
 	},
 	"1.13": map[string]string{
 		"us-east-2":      "ami-049933b64359a1657",
@@ -76,6 +79,8 @@ var amiForRegionAndVersion = map[string]map[string]string{
 		"eu-north-1":     "ami-0d1338fe77f3a408d",
 		"me-south-1":     "ami-094ae1e2a4241f450",
 		"sa-east-1":      "ami-021ac352361d1703f",
+		"cn-north-1":     "ami-0d612e20f17d42713",
+		"cn-northwest-1": "ami-05a3afac89e29f93a",
 	},
 	"1.12": map[string]string{
 		"us-east-2":      "ami-0ded2597c4984f942",
@@ -94,6 +99,8 @@ var amiForRegionAndVersion = map[string]map[string]string{
 		"eu-north-1":     "ami-0529e31552a5cdcdd",
 		"me-south-1":     "ami-09914044247beb6b9",
 		"sa-east-1":      "ami-0f746b2487f5f939d",
+		"cn-north-1":     "ami-0f4c03d24aec51989",
+		"cn-northwest-1": "ami-014ccb9032f6f368f",
 	},
 	"1.11": map[string]string{
 		"us-east-2":      "ami-0c2d37a56f30b2cd0",
@@ -677,7 +684,7 @@ func (d *Driver) Create(ctx context.Context, options *types.DriverOptions, _ *ty
 	}
 	// amend UserData values into template.
 	// must use %q to safely pass the string
-	workerNodesFinalTemplate := fmt.Sprintf(workerNodesTemplate, state.UserData)
+	workerNodesFinalTemplate := fmt.Sprintf(workerNodesTemplate, getEC2ServiceEndpoint(state.Region), state.UserData)
 
 	var volumeSize int64
 	if state.NodeVolumeSize == nil {
@@ -753,6 +760,13 @@ func getVPCStackName(name string) string {
 
 func getWorkNodeName(name string) string {
 	return name + "-eks-worker-nodes"
+}
+
+func getEC2ServiceEndpoint(region string) string {
+	if p, ok := endpoints.PartitionForRegion(endpoints.DefaultPartitions(), region); ok {
+		return fmt.Sprintf("%s.%s", ec2.ServiceName, p.DNSSuffix())
+	}
+	return "ec2.amazonaws.com"
 }
 
 func (d *Driver) createConfigMap(state state, endpoint string, capem []byte, nodeInstanceRole string) error {
@@ -851,18 +865,22 @@ func getEKSToken(name string, state state) (string, error) {
 		credentialsContent = fmt.Sprintf(
 			`[default]
 aws_access_key_id=%v
-aws_secret_access_key=%v`,
+aws_secret_access_key=%v
+region=%v`,
 			state.ClientID,
-			state.ClientSecret)
+			state.ClientSecret,
+			state.Region)
 	} else {
 		credentialsContent = fmt.Sprintf(
 			`[default]
 aws_access_key_id=%v
 aws_secret_access_key=%v
-aws_session_token=%v`,
+aws_session_token=%v
+region=%v`,
 			state.ClientID,
 			state.ClientSecret,
-			state.SessionToken)
+			state.SessionToken,
+			state.Region)
 	}
 
 	err = ioutil.WriteFile(awsCredentialsPath, []byte(credentialsContent), 0644)
