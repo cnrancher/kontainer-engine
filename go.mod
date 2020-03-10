@@ -14,7 +14,7 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.5.0
 	github.com/Azure/go-autorest/autorest/to v0.2.0
 	github.com/Azure/go-autorest/autorest/validation v0.2.0 // indirect
-	github.com/aws/aws-sdk-go v1.16.19
+	github.com/aws/aws-sdk-go v1.21.10
 	github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f // indirect
 	github.com/golang/protobuf v1.3.2
 	github.com/grpc-ecosystem/grpc-gateway v1.9.6 // indirect
