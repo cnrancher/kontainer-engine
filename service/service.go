@@ -394,6 +394,7 @@ type RunningDriver struct {
 
 	listenAddress string
 	cancel        context.CancelFunc
+	command       *exec.Cmd
 }
 
 func (r *RunningDriver) Start() (string, error) {
@@ -442,7 +443,7 @@ func (r *RunningDriver) Start() (string, error) {
 		processContext, r.cancel = context.WithCancel(context.Background())
 
 		cmd := exec.CommandContext(processContext, r.Path, port)
-
+		r.command = cmd
 		if os.Getenv("CATTLE_DEV_MODE") == "" {
 			cred, err := getUserCred()
 			if err != nil {
@@ -500,6 +501,8 @@ func (r *RunningDriver) Stop() {
 		r.Server.Stop()
 	} else {
 		r.cancel()
+		// Avoid creating zombie process
+		r.command.Wait()
 	}
 
 	logrus.Infof("kontainerdriver %v stopped", r.Name)
