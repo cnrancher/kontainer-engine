@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"context"
+	"crypto/x509"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/rancher/rke/cluster"
 	"github.com/rancher/rke/hosts"
 	"github.com/rancher/rke/log"
@@ -92,7 +94,7 @@ func SnapshotSaveEtcdHosts(
 	flags cluster.ExternalFlags, snapshotName string) error {
 
 	log.Infof(ctx, "Starting saving snapshot on etcd hosts")
-	kubeCluster, err := cluster.InitClusterObject(ctx, rkeConfig, flags)
+	kubeCluster, err := cluster.InitClusterObject(ctx, rkeConfig, flags, "")
 	if err != nil {
 		return err
 	}
@@ -121,12 +123,19 @@ func RestoreEtcdSnapshot(
 	snapshotName string) (string, string, string, string, map[string]pki.CertificatePKI, error) {
 	var APIURL, caCrt, clientCert, clientKey string
 	log.Infof(ctx, "Restoring etcd snapshot %s", snapshotName)
-	kubeCluster, err := cluster.InitClusterObject(ctx, rkeConfig, flags)
+
+	stateFilePath := cluster.GetStateFilePath(flags.ClusterFilePath, flags.ConfigDir)
+	rkeFullState, _ := cluster.ReadStateFile(ctx, stateFilePath)
+
+	kubeCluster, err := cluster.InitClusterObject(ctx, rkeConfig, flags, rkeFullState.DesiredState.EncryptionConfig)
 	if err != nil {
 		return APIURL, caCrt, clientCert, clientKey, nil, err
 	}
-	stateFilePath := cluster.GetStateFilePath(flags.ClusterFilePath, flags.ConfigDir)
-	rkeFullState, _ := cluster.ReadStateFile(ctx, stateFilePath)
+
+	if err := validateCerts(rkeFullState.DesiredState); err != nil {
+		return APIURL, caCrt, clientCert, clientKey, nil, err
+	}
+
 	if err := checkLegacyCluster(ctx, kubeCluster, rkeFullState, flags); err != nil {
 		return APIURL, caCrt, clientCert, clientKey, nil, err
 	}
@@ -176,6 +185,44 @@ func RestoreEtcdSnapshot(
 	}
 	log.Infof(ctx, "Finished restoring snapshot [%s] on all etcd hosts", snapshotName)
 	return APIURL, caCrt, clientCert, clientKey, certs, err
+}
+
+func validateCerts(state cluster.State) error {
+	var failedErrs error
+
+	if state.RancherKubernetesEngineConfig == nil {
+		// possibly already started a restore
+		return nil
+	}
+	for name, certPKI := range state.CertificatesBundle {
+		if name == pki.ServiceAccountTokenKeyName || name == pki.RequestHeaderCACertName || name == pki.KubeAdminCertName {
+			continue
+		}
+
+		cert := certPKI.Certificate
+		if cert == nil {
+			if failedErrs == nil {
+				failedErrs = fmt.Errorf("Certificate [%s] is nil", certPKI.Name)
+			} else {
+				failedErrs = errors.Wrap(failedErrs, fmt.Sprintf("Certificate [%s] is nil", certPKI.Name))
+			}
+			continue
+		}
+
+		certPool := x509.NewCertPool()
+		certPool.AddCert(cert)
+		if _, err := cert.Verify(x509.VerifyOptions{Roots: certPool, KeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth}}); err != nil {
+			if failedErrs == nil {
+				failedErrs = fmt.Errorf("Certificate [%s] failed verification: %v", certPKI.Name, err)
+			} else {
+				failedErrs = errors.Wrap(failedErrs, fmt.Sprintf("Certificate [%s] failed verification: %v", certPKI.Name, err))
+			}
+		}
+	}
+	if failedErrs != nil {
+		return errors.Wrap(failedErrs, "[etcd] Failed to restore etcd snapshot: invalid certs")
+	}
+	return nil
 }
 
 func SnapshotSaveEtcdHostsFromCli(ctx *cli.Context) error {
@@ -240,7 +287,7 @@ func SnapshotRemoveFromEtcdHosts(
 	flags cluster.ExternalFlags, snapshotName string) error {
 
 	log.Infof(ctx, "Starting snapshot remove on etcd hosts")
-	kubeCluster, err := cluster.InitClusterObject(ctx, rkeConfig, flags)
+	kubeCluster, err := cluster.InitClusterObject(ctx, rkeConfig, flags, "")
 	if err != nil {
 		return err
 	}

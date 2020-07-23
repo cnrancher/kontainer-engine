@@ -28,7 +28,7 @@ const (
 )
 
 func ReconcileCluster(ctx context.Context, kubeCluster, currentCluster *Cluster, flags ExternalFlags, svcOptionData map[string]*v3.KubernetesServicesOptions) error {
-	logrus.Debugf("[reconcile] currentCluster: %+v\n", currentCluster)
+	logrus.Tracef("[reconcile] currentCluster: %+v\n", currentCluster)
 	log.Infof(ctx, "[reconcile] Reconciling cluster state")
 	kubeCluster.UpdateWorkersOnly = flags.UpdateOnly
 	if currentCluster == nil {
@@ -66,7 +66,6 @@ func ReconcileCluster(ctx context.Context, kubeCluster, currentCluster *Cluster,
 			return err
 		}
 	}
-
 	log.Infof(ctx, "[reconcile] Reconciled cluster state successfully")
 	return nil
 }
@@ -224,7 +223,11 @@ func addEtcdMembers(ctx context.Context, currentCluster, kubeCluster *Cluster, k
 
 		etcdNodePlanMap := make(map[string]v3.RKEConfigNodePlan)
 		for _, etcdReadyHost := range kubeCluster.EtcdReadyHosts {
-			etcdNodePlanMap[etcdReadyHost.Address] = BuildRKEConfigNodePlan(ctx, kubeCluster, etcdReadyHost, etcdReadyHost.DockerInfo, svcOptionData)
+			svcOptions, err := kubeCluster.GetKubernetesServicesOptions(etcdReadyHost.DockerInfo.OSType, svcOptionData)
+			if err != nil {
+				return err
+			}
+			etcdNodePlanMap[etcdReadyHost.Address] = BuildRKEConfigNodePlan(ctx, kubeCluster, etcdReadyHost, etcdReadyHost.DockerInfo, svcOptions)
 		}
 		// this will start the newly added etcd node and make sure it started correctly before restarting other node
 		// https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/runtime-configuration.md#add-a-new-member
@@ -352,7 +355,7 @@ func restartComponentsWhenCertChanges(ctx context.Context, currentCluster, kubeC
 	}
 
 	for _, host := range kubeCluster.EtcdHosts {
-		etcdCertName := pki.GetEtcdCrtName(host.Address)
+		etcdCertName := pki.GetCrtNameForHost(host, pki.EtcdCertName)
 		certMap := map[string]bool{
 			etcdCertName: false,
 		}

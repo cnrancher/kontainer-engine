@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"context"
+	"crypto/x509"
 	"fmt"
-
-	"github.com/sirupsen/logrus"
+	"time"
 
 	"github.com/rancher/rke/cluster"
 	"github.com/rancher/rke/hosts"
@@ -13,6 +13,7 @@ import (
 	"github.com/rancher/rke/pki/cert"
 	"github.com/rancher/rke/services"
 	v3 "github.com/rancher/types/apis/management.cattle.io/v3"
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
@@ -126,10 +127,6 @@ func generateCSRFromCli(ctx *cli.Context) error {
 	return GenerateRKECSRs(context.Background(), rkeConfig, externalFlags)
 }
 
-func showRKECertificatesFromCli(ctx *cli.Context) error {
-	return nil
-}
-
 func rebuildClusterWithRotatedCertificates(ctx context.Context,
 	dialersOptions hosts.DialersOptions,
 	flags cluster.ExternalFlags, svcOptionData map[string]*v3.KubernetesServicesOptions) (string, string, string, string, map[string]pki.CertificatePKI, error) {
@@ -140,7 +137,7 @@ func rebuildClusterWithRotatedCertificates(ctx context.Context,
 		return APIURL, caCrt, clientCert, clientKey, nil, err
 	}
 
-	kubeCluster, err := cluster.InitClusterObject(ctx, clusterState.DesiredState.RancherKubernetesEngineConfig.DeepCopy(), flags)
+	kubeCluster, err := cluster.InitClusterObject(ctx, clusterState.DesiredState.RancherKubernetesEngineConfig.DeepCopy(), flags, clusterState.DesiredState.EncryptionConfig)
 	if err != nil {
 		return APIURL, caCrt, clientCert, clientKey, nil, err
 	}
@@ -155,7 +152,9 @@ func rebuildClusterWithRotatedCertificates(ctx context.Context,
 	if err := cluster.SetUpAuthentication(ctx, kubeCluster, nil, clusterState); err != nil {
 		return APIURL, caCrt, clientCert, clientKey, nil, err
 	}
-	APIURL = fmt.Sprintf("https://" + kubeCluster.ControlPlaneHosts[0].Address + ":6443")
+	if len(kubeCluster.ControlPlaneHosts) > 0 {
+		APIURL = fmt.Sprintf("https://%s:6443", kubeCluster.ControlPlaneHosts[0].Address)
+	}
 	clientCert = string(cert.EncodeCertPEM(kubeCluster.Certificates[pki.KubeAdminCertName].Certificate))
 	clientKey = string(cert.EncodePrivateKeyPEM(kubeCluster.Certificates[pki.KubeAdminCertName].Key))
 	caCrt = string(cert.EncodeCertPEM(kubeCluster.Certificates[pki.CACertName].Certificate))
@@ -163,8 +162,9 @@ func rebuildClusterWithRotatedCertificates(ctx context.Context,
 	if err := kubeCluster.SetUpHosts(ctx, flags); err != nil {
 		return APIURL, caCrt, clientCert, clientKey, nil, err
 	}
+
 	// Save new State
-	if err := kubeCluster.UpdateClusterCurrentState(ctx, clusterState); err != nil {
+	if err := saveClusterState(ctx, kubeCluster, clusterState); err != nil {
 		return APIURL, caCrt, clientCert, clientKey, nil, err
 	}
 
@@ -185,7 +185,7 @@ func rebuildClusterWithRotatedCertificates(ctx context.Context,
 	}
 	if isLegacyKubeAPI {
 		log.Infof(ctx, "[controlplane] Redeploying controlplane to update kubeapi parameters")
-		if err := kubeCluster.DeployControlPlane(ctx, svcOptionData); err != nil {
+		if _, err := kubeCluster.DeployControlPlane(ctx, svcOptionData, true); err != nil {
 			return APIURL, caCrt, clientCert, clientKey, nil, err
 		}
 	}
@@ -206,6 +206,26 @@ func rebuildClusterWithRotatedCertificates(ctx context.Context,
 	return APIURL, caCrt, clientCert, clientKey, kubeCluster.Certificates, nil
 }
 
+func saveClusterState(ctx context.Context, kubeCluster *cluster.Cluster, clusterState *cluster.FullState) error {
+	var err error
+	if err = kubeCluster.UpdateClusterCurrentState(ctx, clusterState); err != nil {
+		return err
+	}
+	// Attempt to store cluster full state to Kubernetes
+	for i := 1; i <= 3; i++ {
+		err = cluster.SaveFullStateToKubernetes(ctx, kubeCluster, clusterState)
+		if err != nil {
+			time.Sleep(time.Second * time.Duration(2))
+			continue
+		}
+		break
+	}
+	if err != nil {
+		logrus.Warnf("Failed to save full cluster state to Kubernetes")
+	}
+	return nil
+}
+
 func rotateRKECertificates(ctx context.Context, kubeCluster *cluster.Cluster, flags cluster.ExternalFlags, rkeFullState *cluster.FullState) (*cluster.FullState, error) {
 	log.Infof(ctx, "Rotating Kubernetes cluster certificates")
 	currentCluster, err := kubeCluster.GetClusterState(ctx, rkeFullState)
@@ -216,6 +236,21 @@ func rotateRKECertificates(ctx context.Context, kubeCluster *cluster.Cluster, fl
 		return nil, fmt.Errorf("Failed to rotate certificates: can't find old certificates")
 	}
 	currentCluster.RotateCertificates = kubeCluster.RotateCertificates
+	if !kubeCluster.RotateCertificates.CACertificates {
+		caCertPKI, ok := rkeFullState.CurrentState.CertificatesBundle[pki.CACertName]
+		if !ok {
+			return nil, fmt.Errorf("Failed to rotate certificates: can't find CA certificate")
+		}
+		caCert := caCertPKI.Certificate
+		if caCert == nil {
+			return nil, fmt.Errorf("Failed to rotate certificates: CA certificate is nil")
+		}
+		certPool := x509.NewCertPool()
+		certPool.AddCert(caCert)
+		if _, err := caCert.Verify(x509.VerifyOptions{Roots: certPool, KeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth}}); err != nil {
+			return nil, fmt.Errorf("Failed to rotate certificates: CA certificate is invalid, please use the --rotate-ca flag to rotate CA certificate, error: %v", err)
+		}
+	}
 	if err := cluster.RotateRKECertificates(ctx, currentCluster, flags, rkeFullState); err != nil {
 		return nil, err
 	}
@@ -235,7 +270,7 @@ func GenerateRKECSRs(ctx context.Context, rkeConfig *v3.RancherKubernetesEngineC
 	}
 
 	// initialze the cluster object from the config file
-	kubeCluster, err := cluster.InitClusterObject(ctx, rkeConfig, flags)
+	kubeCluster, err := cluster.InitClusterObject(ctx, rkeConfig, flags, "")
 	if err != nil {
 		return err
 	}

@@ -31,7 +31,7 @@ import (
 	"gopkg.in/yaml.v2"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -132,6 +132,7 @@ type state struct {
 	MaximumASGSize int64
 	DesiredASGSize int64
 	NodeVolumeSize *int64
+	EBSEncryption  bool
 
 	UserData string
 
@@ -260,10 +261,10 @@ func (d *Driver) GetDriverCreateOptions(ctx context.Context) (*types.DriverFlags
 		Usage: "Pass user-data to the nodes to perform automated configuration tasks",
 		Default: &types.Default{
 			DefaultString: "#!/bin/bash\nset -o xtrace\n" +
-				"/etc/eks/bootstrap.sh ${ClusterName} ${BootstrapArguments}" +
+				"/etc/eks/bootstrap.sh ${ClusterName} ${BootstrapArguments}\n" +
 				"/opt/aws/bin/cfn-signal --exit-code $? " +
 				"--stack  ${AWS::StackName} " +
-				"--resource NodeGroup --region ${AWS::Region}\n",
+				"--resource NodeGroup --region ${AWS::Region}",
 		},
 	}
 	driverFlag.Options["keyPairName"] = &types.Flag{
@@ -278,6 +279,13 @@ func (d *Driver) GetDriverCreateOptions(ctx context.Context) (*types.DriverFlags
 		Type:    types.StringType,
 		Usage:   "The kubernetes master version",
 		Default: &types.Default{DefaultString: "1.13"},
+	}
+	driverFlag.Options["ebs-encryption"] = &types.Flag{
+		Type:  types.BoolType,
+		Usage: "Enables EBS encryption of worker nodes",
+		Default: &types.Default{
+			DefaultBool: false,
+		},
 	}
 
 	return &driverFlag, nil
@@ -332,7 +340,7 @@ func getStateFromOptions(driverOptions *types.DriverOptions) (state, error) {
 	state.AMI = options.GetValueFromDriverOptions(driverOptions, types.StringType, "ami").(string)
 	state.AssociateWorkerNodePublicIP, _ = options.GetValueFromDriverOptions(driverOptions, types.BoolPointerType, "associate-worker-node-public-ip", "associateWorkerNodePublicIp").(*bool)
 	state.KeyPairName = options.GetValueFromDriverOptions(driverOptions, types.StringType, "keyPairName").(string)
-
+	state.EBSEncryption = options.GetValueFromDriverOptions(driverOptions, types.BoolType, "ebsEncryption", "EBSEncryption").(bool)
 	// UserData
 	state.UserData = options.GetValueFromDriverOptions(driverOptions, types.StringType, "user-data", "userData").(string)
 
@@ -507,7 +515,7 @@ func toStringLiteralSlice(strings []*string) []string {
 }
 
 func (d *Driver) Create(ctx context.Context, options *types.DriverOptions, _ *types.ClusterInfo) (*types.ClusterInfo, error) {
-	logrus.Infof("Starting create")
+	logrus.Infof("[amazonelasticcontainerservice] Starting create")
 
 	state, err := getStateFromOptions(options)
 	if err != nil {
@@ -515,7 +523,9 @@ func (d *Driver) Create(ctx context.Context, options *types.DriverOptions, _ *ty
 	}
 
 	info := &types.ClusterInfo{}
-	storeState(info, state)
+	if err := storeState(info, state); err != nil {
+		return nil, fmt.Errorf("error storing eks state")
+	}
 
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(state.Region),
@@ -537,7 +547,7 @@ func (d *Driver) Create(ctx context.Context, options *types.DriverOptions, _ *ty
 	var subnetIds []*string
 	var securityGroups []*string
 	if state.VirtualNetwork == "" {
-		logrus.Infof("Bringing up vpc")
+		logrus.Infof("[amazonelasticcontainerservice] Bringing up vpc")
 
 		stack, err := d.createStack(svc, getVPCStackName(state.DisplayName), displayName, vpcTemplate, []string{},
 			[]*cloudformation.Parameter{})
@@ -568,7 +578,7 @@ func (d *Driver) Create(ctx context.Context, options *types.DriverOptions, _ *ty
 			}
 		}
 	} else {
-		logrus.Infof("VPC info provided, skipping create")
+		logrus.Infof("[amazonelasticcontainerservice] VPC info provided, skipping create")
 
 		vpcid = state.VirtualNetwork
 		subnetIds = toStringPointerSlice(state.Subnets)
@@ -577,7 +587,7 @@ func (d *Driver) Create(ctx context.Context, options *types.DriverOptions, _ *ty
 
 	var roleARN string
 	if state.ServiceRole == "" {
-		logrus.Infof("Creating service role")
+		logrus.Infof("[amazonelasticcontainerservice] Creating service role")
 
 		stack, err := d.createStack(svc, getServiceRoleName(state.DisplayName), displayName, serviceRoleTemplate,
 			[]string{cloudformation.CapabilityCapabilityIam}, nil)
@@ -590,7 +600,7 @@ func (d *Driver) Create(ctx context.Context, options *types.DriverOptions, _ *ty
 			return info, fmt.Errorf("no RoleARN was returned")
 		}
 	} else {
-		logrus.Infof("Retrieving existing service role")
+		logrus.Infof("[amazonelasticcontainerservice] Retrieving existing service role")
 		iamClient := iam.New(sess, aws.NewConfig().WithRegion(state.Region))
 		role, err := iamClient.GetRole(&iam.GetRoleInput{
 			RoleName: aws.String(state.ServiceRole),
@@ -602,7 +612,7 @@ func (d *Driver) Create(ctx context.Context, options *types.DriverOptions, _ *ty
 		roleARN = *role.Role.Arn
 	}
 
-	logrus.Infof("Creating EKS cluster")
+	logrus.Infof("[amazonelasticcontainerservice] Creating EKS cluster")
 
 	eksService := eks.New(sess)
 	_, err = eksService.CreateCluster(&eks.CreateClusterInput{
@@ -623,7 +633,7 @@ func (d *Driver) Create(ctx context.Context, options *types.DriverOptions, _ *ty
 		return info, err
 	}
 
-	logrus.Infof("Cluster provisioned successfully")
+	logrus.Infof("[amazonelasticcontainerservice] Cluster [%s] provisioned successfully", state.ClusterName)
 
 	capem, err := base64.StdEncoding.DecodeString(*cluster.Cluster.CertificateAuthority.Data)
 	if err != nil {
@@ -649,7 +659,7 @@ func (d *Driver) Create(ctx context.Context, options *types.DriverOptions, _ *ty
 		return info, fmt.Errorf("error creating key pair %v", err)
 	}
 
-	logrus.Infof("Creating worker nodes")
+	logrus.Infof("[amazonelasticcontainerservice] Creating worker nodes")
 
 	var amiID string
 	if state.AMI != "" {
@@ -679,6 +689,7 @@ func (d *Driver) Create(ctx context.Context, options *types.DriverOptions, _ *ty
 
 	stack, err := d.createStack(svc, getWorkNodeName(state.DisplayName), displayName, workerNodesFinalTemplate,
 		[]string{cloudformation.CapabilityCapabilityIam},
+		// these parameter values must exactly match those in the template file
 		[]*cloudformation.Parameter{
 			{ParameterKey: aws.String("ClusterName"), ParameterValue: aws.String(state.DisplayName)},
 			{ParameterKey: aws.String("ClusterControlPlaneSecurityGroup"),
@@ -700,6 +711,7 @@ func (d *Driver) Create(ctx context.Context, options *types.DriverOptions, _ *ty
 			{ParameterKey: aws.String("Subnets"),
 				ParameterValue: aws.String(strings.Join(toStringLiteralSlice(subnetIds), ","))},
 			{ParameterKey: aws.String("PublicIp"), ParameterValue: aws.String(strconv.FormatBool(publicIP))},
+			{ParameterKey: aws.String("EBSEncryption"), ParameterValue: aws.String(strconv.FormatBool(state.EBSEncryption))},
 		})
 	if err != nil {
 		return info, fmt.Errorf("error creating stack with worker nodes template: %v", err)
@@ -774,21 +786,21 @@ func (d *Driver) createConfigMap(state state, endpoint string, capem []byte, nod
 		return fmt.Errorf("error marshalling map roles: %v", err)
 	}
 
-	logrus.Infof("Applying ConfigMap")
+	logrus.Infof("[amazonelasticcontainerservice] Applying ConfigMap")
 
-	_, err = clientset.CoreV1().ConfigMaps("kube-system").Create(&v1.ConfigMap{
-		TypeMeta: v12.TypeMeta{
+	_, err = clientset.CoreV1().ConfigMaps("kube-system").Create(context.TODO(), &v1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
 			Kind:       "ConfigMap",
 			APIVersion: "v1",
 		},
-		ObjectMeta: v12.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "aws-auth",
 			Namespace: "kube-system",
 		},
 		Data: map[string]string{
 			"mapRoles": string(mapRoles),
 		},
-	})
+	}, metav1.CreateOptions{})
 	if err != nil && !errors.IsConflict(err) {
 		return fmt.Errorf("error creating config map: %v", err)
 	}
@@ -883,7 +895,7 @@ func (d *Driver) waitForClusterReady(svc *eks.EKS, state state) (*eks.DescribeCl
 	for status != eks.ClusterStatusActive {
 		time.Sleep(30 * time.Second)
 
-		logrus.Infof("Waiting for cluster to finish provisioning")
+		logrus.Infof("[amazonelasticcontainerservice] Waiting for cluster [%s] to finish provisioning", state.ClusterName)
 
 		cluster, err = svc.DescribeCluster(&eks.DescribeClusterInput{
 			Name: aws.String(state.DisplayName),
@@ -950,7 +962,7 @@ func getParameterValueFromOutput(key string, outputs []*cloudformation.Output) s
 }
 
 func (d *Driver) Update(ctx context.Context, info *types.ClusterInfo, options *types.DriverOptions) (*types.ClusterInfo, error) {
-	logrus.Infof("Starting update")
+	logrus.Infof("[amazonelasticcontainerservice] Starting update")
 	oldstate := &state{}
 	state, err := getState(info)
 	if err != nil {
@@ -978,7 +990,7 @@ func (d *Driver) Update(ctx context.Context, info *types.ClusterInfo, options *t
 	}
 
 	if !sendUpdate {
-		logrus.Infof("Update complete")
+		logrus.Infof("[amazonelasticcontainerservice] Update complete for cluster [%s]", state.ClusterName)
 		return info, storeState(info, state)
 	}
 
@@ -987,19 +999,19 @@ func (d *Driver) Update(ctx context.Context, info *types.ClusterInfo, options *t
 		return info, err
 	}
 
-	logrus.Infof("Update complete")
+	logrus.Infof("[amazonelasticcontainerservice] Update complete for cluster [%s]", state.ClusterName)
 	return info, storeState(info, state)
 }
 
 func (d *Driver) PostCheck(ctx context.Context, info *types.ClusterInfo) (*types.ClusterInfo, error) {
-	logrus.Infof("Starting post-check")
+	logrus.Infof("[amazonelasticcontainerservice] Starting post-check")
 
 	clientset, err := getClientset(info)
 	if err != nil {
 		return nil, err
 	}
 
-	logrus.Infof("Generating service account token")
+	logrus.Infof("[amazonelasticcontainerservice] Generating service account token")
 
 	info.ServiceAccountToken, err = util.GenerateServiceAccountToken(clientset)
 	if err != nil {
@@ -1077,7 +1089,7 @@ func getClientset(info *types.ClusterInfo) (*kubernetes.Clientset, error) {
 }
 
 func (d *Driver) Remove(ctx context.Context, info *types.ClusterInfo) error {
-	logrus.Infof("Starting delete cluster")
+	logrus.Infof("[amazonelasticcontainerservice] Starting delete cluster")
 
 	state, err := getState(info)
 	if err != nil {
@@ -1262,7 +1274,7 @@ func (d *Driver) getClusterStats(ctx context.Context, info *types.ClusterInfo) (
 }
 
 func (d *Driver) SetVersion(ctx context.Context, info *types.ClusterInfo, version *types.KubernetesVersion) error {
-	logrus.Info("updating kubernetes version")
+	logrus.Info("[amazonelasticcontainerservice] updating kubernetes version")
 	state, err := getState(info)
 	if err != nil {
 		return err
@@ -1273,7 +1285,7 @@ func (d *Driver) SetVersion(ctx context.Context, info *types.ClusterInfo, versio
 		return err
 	}
 
-	logrus.Info("kubernetes version update success")
+	logrus.Info("[amazonelasticcontainerservice] kubernetes version update success")
 	return nil
 }
 
@@ -1330,7 +1342,7 @@ func (d *Driver) updateClusterAndWait(ctx context.Context, state state) error {
 }
 
 func (d *Driver) waitForClusterUpdateReady(ctx context.Context, svc *eks.EKS, state state, updateID string) error {
-	logrus.Infof("waiting for update id[%s] state", updateID)
+	logrus.Infof("[amazonelasticcontainerservice] waiting for update id[%s] state", updateID)
 	var update *eks.DescribeUpdateOutput
 	var err error
 
@@ -1338,7 +1350,7 @@ func (d *Driver) waitForClusterUpdateReady(ctx context.Context, svc *eks.EKS, st
 	for status != "Successful" {
 		time.Sleep(30 * time.Second)
 
-		logrus.Infof("Waiting for cluster update to finish updating")
+		logrus.Infof("[amazonelasticcontainerservice] Waiting for cluster [%s] update to finish updating", state.ClusterName)
 
 		update, err = svc.DescribeUpdateWithContext(ctx, &eks.DescribeUpdateInput{
 			Name:     aws.String(state.DisplayName),
@@ -1378,19 +1390,19 @@ func getAMIs(ctx context.Context, ec2svc *ec2.EC2, state state) string {
 	version := state.KubernetesVersion
 	output, err := ec2svc.DescribeImagesWithContext(ctx, &ec2.DescribeImagesInput{
 		Filters: []*ec2.Filter{
-			&ec2.Filter{
+			{
 				Name:   aws.String("is-public"),
 				Values: aws.StringSlice([]string{"true"}),
 			},
-			&ec2.Filter{
+			{
 				Name:   aws.String("state"),
 				Values: aws.StringSlice([]string{"available"}),
 			},
-			&ec2.Filter{
+			{
 				Name:   aws.String("image-type"),
 				Values: aws.StringSlice([]string{"machine"}),
 			},
-			&ec2.Filter{
+			{
 				Name:   aws.String("name"),
 				Values: aws.StringSlice([]string{fmt.Sprintf("%s%s*", amiNamePrefix, version)}),
 			},

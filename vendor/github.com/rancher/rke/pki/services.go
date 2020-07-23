@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strings"
 
 	"github.com/rancher/rke/hosts"
 	"github.com/rancher/rke/log"
 	"github.com/rancher/rke/pki/cert"
 	v3 "github.com/rancher/types/apis/management.cattle.io/v3"
+	"github.com/sirupsen/logrus"
 )
 
 func GenerateKubeAPICertificate(ctx context.Context, certs map[string]CertificatePKI, rkeConfig v3.RancherKubernetesEngineConfig, configPath, configDir string, rotate bool) error {
@@ -30,10 +32,10 @@ func GenerateKubeAPICertificate(ctx context.Context, certs map[string]Certificat
 	kubeAPICert := certs[KubeAPICertName].Certificate
 	if kubeAPICert != nil &&
 		reflect.DeepEqual(kubeAPIAltNames.DNSNames, kubeAPICert.DNSNames) &&
-		deepEqualIPsAltNames(kubeAPIAltNames.IPs, kubeAPICert.IPAddresses) && !rotate {
+		DeepEqualIPsAltNames(kubeAPIAltNames.IPs, kubeAPICert.IPAddresses) && !rotate {
 		return nil
 	}
-	log.Infof(ctx, "[certificates] Generating Kubernetes API server certificates")
+	logrus.Info("[certificates] Generating Kubernetes API server certificates")
 	var serviceKey *rsa.PrivateKey
 	if !rotate {
 		serviceKey = certs[KubeAPICertName].Key
@@ -46,7 +48,7 @@ func GenerateKubeAPICertificate(ctx context.Context, certs map[string]Certificat
 	// handle service account tokens in old clusters
 	apiCert := certs[KubeAPICertName]
 	if certs[ServiceAccountTokenKeyName].Key == nil {
-		log.Infof(ctx, "[certificates] Generating Service account token key")
+		logrus.Info("[certificates] Generating Service account token key")
 		certs[ServiceAccountTokenKeyName] = ToCertObject(ServiceAccountTokenKeyName, ServiceAccountTokenKeyName, "", apiCert.Certificate, apiCert.Key, nil)
 	}
 	return nil
@@ -65,10 +67,10 @@ func GenerateKubeAPICSR(ctx context.Context, certs map[string]CertificatePKI, rk
 	oldKubeAPICSR := certs[KubeAPICertName].CSR
 	if oldKubeAPICSR != nil &&
 		reflect.DeepEqual(kubeAPIAltNames.DNSNames, oldKubeAPICSR.DNSNames) &&
-		deepEqualIPsAltNames(kubeAPIAltNames.IPs, oldKubeAPICSR.IPAddresses) {
+		DeepEqualIPsAltNames(kubeAPIAltNames.IPs, oldKubeAPICSR.IPAddresses) {
 		return nil
 	}
-	log.Infof(ctx, "[certificates] Generating Kubernetes API server csr")
+	logrus.Info("[certificates] Generating Kubernetes API server csr")
 	kubeAPICSR, kubeAPIKey, err := GenerateCertSigningRequestAndKey(true, KubeAPICertName, kubeAPIAltNames, certs[KubeAPICertName].Key, nil)
 	if err != nil {
 		return err
@@ -87,7 +89,7 @@ func GenerateKubeControllerCertificate(ctx context.Context, certs map[string]Cer
 	if certs[KubeControllerCertName].Certificate != nil && !rotate {
 		return nil
 	}
-	log.Infof(ctx, "[certificates] Generating Kube Controller certificates")
+	logrus.Info("[certificates] Generating Kube Controller certificates")
 	var serviceKey *rsa.PrivateKey
 	if !rotate {
 		serviceKey = certs[KubeControllerCertName].Key
@@ -107,7 +109,7 @@ func GenerateKubeControllerCSR(ctx context.Context, certs map[string]Certificate
 	if kubeControllerCSRPEM != "" {
 		return nil
 	}
-	log.Infof(ctx, "[certificates] Generating Kube Controller csr")
+	logrus.Info("[certificates] Generating Kube Controller csr")
 	kubeControllerCSR, kubeControllerKey, err := GenerateCertSigningRequestAndKey(false, getDefaultCN(KubeControllerCertName), nil, certs[KubeControllerCertName].Key, nil)
 	if err != nil {
 		return err
@@ -126,7 +128,7 @@ func GenerateKubeSchedulerCertificate(ctx context.Context, certs map[string]Cert
 	if certs[KubeSchedulerCertName].Certificate != nil && !rotate {
 		return nil
 	}
-	log.Infof(ctx, "[certificates] Generating Kube Scheduler certificates")
+	logrus.Info("[certificates] Generating Kube Scheduler certificates")
 	var serviceKey *rsa.PrivateKey
 	if !rotate {
 		serviceKey = certs[KubeSchedulerCertName].Key
@@ -146,7 +148,7 @@ func GenerateKubeSchedulerCSR(ctx context.Context, certs map[string]CertificateP
 	if kubeSchedulerCSRPEM != "" {
 		return nil
 	}
-	log.Infof(ctx, "[certificates] Generating Kube Scheduler csr")
+	logrus.Info("[certificates] Generating Kube Scheduler csr")
 	kubeSchedulerCSR, kubeSchedulerKey, err := GenerateCertSigningRequestAndKey(false, getDefaultCN(KubeSchedulerCertName), nil, certs[KubeSchedulerCertName].Key, nil)
 	if err != nil {
 		return err
@@ -165,7 +167,7 @@ func GenerateKubeProxyCertificate(ctx context.Context, certs map[string]Certific
 	if certs[KubeProxyCertName].Certificate != nil && !rotate {
 		return nil
 	}
-	log.Infof(ctx, "[certificates] Generating Kube Proxy certificates")
+	logrus.Info("[certificates] Generating Kube Proxy certificates")
 	var serviceKey *rsa.PrivateKey
 	if !rotate {
 		serviceKey = certs[KubeProxyCertName].Key
@@ -185,7 +187,7 @@ func GenerateKubeProxyCSR(ctx context.Context, certs map[string]CertificatePKI, 
 	if kubeProxyCSRPEM != "" {
 		return nil
 	}
-	log.Infof(ctx, "[certificates] Generating Kube Proxy csr")
+	logrus.Info("[certificates] Generating Kube Proxy csr")
 	kubeProxyCSR, kubeProxyKey, err := GenerateCertSigningRequestAndKey(false, getDefaultCN(KubeProxyCertName), nil, certs[KubeProxyCertName].Key, nil)
 	if err != nil {
 		return err
@@ -204,7 +206,7 @@ func GenerateKubeNodeCertificate(ctx context.Context, certs map[string]Certifica
 	if certs[KubeNodeCertName].Certificate != nil && !rotate {
 		return nil
 	}
-	log.Infof(ctx, "[certificates] Generating Node certificate")
+	logrus.Info("[certificates] Generating Node certificate")
 	var serviceKey *rsa.PrivateKey
 	if !rotate {
 		serviceKey = certs[KubeProxyCertName].Key
@@ -224,7 +226,7 @@ func GenerateKubeNodeCSR(ctx context.Context, certs map[string]CertificatePKI, r
 	if nodeCSRPEM != "" {
 		return nil
 	}
-	log.Infof(ctx, "[certificates] Generating Node csr and key")
+	logrus.Info("[certificates] Generating Node csr and key")
 	nodeCSR, nodeKey, err := GenerateCertSigningRequestAndKey(false, KubeNodeCommonName, nil, certs[KubeNodeCertName].Key, []string{KubeNodeOrganizationName})
 	if err != nil {
 		return err
@@ -235,7 +237,7 @@ func GenerateKubeNodeCSR(ctx context.Context, certs map[string]CertificatePKI, r
 
 func GenerateKubeAdminCertificate(ctx context.Context, certs map[string]CertificatePKI, rkeConfig v3.RancherKubernetesEngineConfig, configPath, configDir string, rotate bool) error {
 	// generate Admin certificate and key
-	log.Infof(ctx, "[certificates] Generating admin certificates and kubeconfig")
+	logrus.Info("[certificates] Generating admin certificates and kubeconfig")
 	caCrt := certs[CACertName].Certificate
 	caKey := certs[CACertName].Key
 	if caCrt == nil || caKey == nil {
@@ -283,7 +285,7 @@ func GenerateKubeAdminCSR(ctx context.Context, certs map[string]CertificatePKI, 
 	if err != nil {
 		return err
 	}
-	log.Infof(ctx, "[certificates] Generating admin csr and kubeconfig")
+	logrus.Info("[certificates] Generating admin csr and kubeconfig")
 	kubeAdminCertObj := ToCertObject(KubeAdminCertName, KubeAdminCertName, KubeAdminOrganizationName, kubeAdminCrt, kubeAdminKey, kubeAdminCSR)
 	certs[KubeAdminCertName] = kubeAdminCertObj
 	return nil
@@ -299,7 +301,7 @@ func GenerateAPIProxyClientCertificate(ctx context.Context, certs map[string]Cer
 	if certs[APIProxyClientCertName].Certificate != nil && !rotate {
 		return nil
 	}
-	log.Infof(ctx, "[certificates] Generating Kubernetes API server proxy client certificates")
+	logrus.Info("[certificates] Generating Kubernetes API server proxy client certificates")
 	var serviceKey *rsa.PrivateKey
 	if !rotate {
 		serviceKey = certs[APIProxyClientCertName].Key
@@ -319,7 +321,7 @@ func GenerateAPIProxyClientCSR(ctx context.Context, certs map[string]Certificate
 	if apiserverProxyClientCSRPEM != "" {
 		return nil
 	}
-	log.Infof(ctx, "[certificates] Generating Kubernetes API server proxy client csr")
+	logrus.Info("[certificates] Generating Kubernetes API server proxy client csr")
 	apiserverProxyClientCSR, apiserverProxyClientKey, err := GenerateCertSigningRequestAndKey(true, APIProxyClientCertName, nil, certs[APIProxyClientCertName].Key, nil)
 	if err != nil {
 		return err
@@ -370,9 +372,8 @@ func GenerateEtcdCertificates(ctx context.Context, certs map[string]CertificateP
 		ips = append(ips, ip.String())
 	}
 	sort.Strings(ips)
-
 	for _, host := range etcdHosts {
-		etcdName := GetEtcdCrtName(host.InternalAddress)
+		etcdName := GetCrtNameForHost(host, EtcdCertName)
 		if _, ok := certs[etcdName]; ok && certs[etcdName].CertificatePEM != "" && !rotate {
 			cert := certs[etcdName].Certificate
 			if cert != nil && len(dnsNames) == len(cert.DNSNames) && len(ips) == len(cert.IPAddresses) {
@@ -396,13 +397,14 @@ func GenerateEtcdCertificates(ctx context.Context, certs map[string]CertificateP
 		if !rotate {
 			serviceKey = certs[etcdName].Key
 		}
-		log.Infof(ctx, "[certificates] Generating etcd-%s certificate and key", host.InternalAddress)
+		logrus.Infof("[certificates] Generating %s certificate and key", etcdName)
 		etcdCrt, etcdKey, err := GenerateSignedCertAndKey(caCrt, caKey, true, EtcdCertName, etcdAltNames, serviceKey, nil)
 		if err != nil {
 			return err
 		}
 		certs[etcdName] = ToCertObject(etcdName, "", "", etcdCrt, etcdKey, nil)
 	}
+	deleteUnusedCerts(ctx, certs, EtcdCertName, etcdHosts)
 	return nil
 }
 
@@ -415,13 +417,13 @@ func GenerateEtcdCSRs(ctx context.Context, certs map[string]CertificatePKI, rkeC
 	etcdHosts := hosts.NodesToHosts(rkeConfig.Nodes, etcdRole)
 	etcdAltNames := GetAltNames(etcdHosts, clusterDomain, kubernetesServiceIP, []string{})
 	for _, host := range etcdHosts {
-		etcdName := GetEtcdCrtName(host.InternalAddress)
+		etcdName := GetCrtNameForHost(host, EtcdCertName)
 		etcdCrt := certs[etcdName].Certificate
 		etcdCSRPEM := certs[etcdName].CSRPEM
 		if etcdCSRPEM != "" {
 			return nil
 		}
-		log.Infof(ctx, "[certificates] Generating etcd-%s csr and key", host.InternalAddress)
+		logrus.Infof("[certificates] Generating etcd-%s csr and key", host.InternalAddress)
 		etcdCSR, etcdKey, err := GenerateCertSigningRequestAndKey(true, EtcdCertName, etcdAltNames, certs[etcdName].Key, nil)
 		if err != nil {
 			return err
@@ -463,7 +465,7 @@ func GenerateRKECACerts(ctx context.Context, certs map[string]CertificatePKI, co
 
 func GenerateRKEMasterCACert(ctx context.Context, certs map[string]CertificatePKI, configPath, configDir string) error {
 	// generate kubernetes CA certificate and key
-	log.Infof(ctx, "[certificates] Generating CA kubernetes certificates")
+	logrus.Info("[certificates] Generating CA kubernetes certificates")
 
 	caCrt, caKey, err := GenerateCACertAndKey(CACertName, nil)
 	if err != nil {
@@ -475,12 +477,70 @@ func GenerateRKEMasterCACert(ctx context.Context, certs map[string]CertificatePK
 
 func GenerateRKERequestHeaderCACert(ctx context.Context, certs map[string]CertificatePKI, configPath, configDir string) error {
 	// generate request header client CA certificate and key
-	log.Infof(ctx, "[certificates] Generating Kubernetes API server aggregation layer requestheader client CA certificates")
+	logrus.Info("[certificates] Generating Kubernetes API server aggregation layer requestheader client CA certificates")
 	requestHeaderCACrt, requestHeaderCAKey, err := GenerateCACertAndKey(RequestHeaderCACertName, nil)
 	if err != nil {
 		return err
 	}
 	certs[RequestHeaderCACertName] = ToCertObject(RequestHeaderCACertName, "", "", requestHeaderCACrt, requestHeaderCAKey, nil)
+	return nil
+}
+
+func GenerateKubeletCertificate(ctx context.Context, certs map[string]CertificatePKI, rkeConfig v3.RancherKubernetesEngineConfig, configPath, configDir string, rotate bool) error {
+	// generate kubelet certificate and key
+	caCrt := certs[CACertName].Certificate
+	caKey := certs[CACertName].Key
+	if caCrt == nil || caKey == nil {
+		return fmt.Errorf("CA Certificate or Key is empty")
+	}
+	log.Debugf(ctx, "[certificates] Generating Kubernetes Kubelet certificates")
+	allHosts := hosts.NodesToHosts(rkeConfig.Nodes, "")
+	for _, host := range allHosts {
+		kubeletName := GetCrtNameForHost(host, KubeletCertName)
+		kubeletCert := certs[kubeletName].Certificate
+		if kubeletCert != nil && !rotate {
+			continue
+		}
+		kubeletAltNames := GetIPHostAltnamesForHost(host)
+		if kubeletCert != nil &&
+			reflect.DeepEqual(kubeletAltNames.DNSNames, kubeletCert.DNSNames) &&
+			DeepEqualIPsAltNames(kubeletAltNames.IPs, kubeletCert.IPAddresses) && !rotate {
+			continue
+		}
+		var serviceKey *rsa.PrivateKey
+		if !rotate {
+			serviceKey = certs[kubeletName].Key
+		}
+		log.Debugf(ctx, "[certificates] Generating %s certificate and key", kubeletName)
+		kubeletCrt, kubeletKey, err := GenerateSignedCertAndKey(caCrt, caKey, true, kubeletName, kubeletAltNames, serviceKey, nil)
+		if err != nil {
+			return err
+		}
+		certs[kubeletName] = ToCertObject(kubeletName, "", "", kubeletCrt, kubeletKey, nil)
+	}
+	deleteUnusedCerts(ctx, certs, KubeletCertName, allHosts)
+	return nil
+}
+
+func GenerateKubeletCSR(ctx context.Context, certs map[string]CertificatePKI, rkeConfig v3.RancherKubernetesEngineConfig) error {
+	allHosts := hosts.NodesToHosts(rkeConfig.Nodes, "")
+	for _, host := range allHosts {
+		kubeletName := GetCrtNameForHost(host, KubeletCertName)
+		kubeletCert := certs[kubeletName].Certificate
+		oldKubeletCSR := certs[kubeletName].CSR
+		kubeletAltNames := GetIPHostAltnamesForHost(host)
+		if oldKubeletCSR != nil &&
+			reflect.DeepEqual(kubeletAltNames.DNSNames, oldKubeletCSR.DNSNames) &&
+			DeepEqualIPsAltNames(kubeletAltNames.IPs, oldKubeletCSR.IPAddresses) {
+			return nil
+		}
+		logrus.Infof("[certificates] Generating %s Kubernetes Kubelet csr", kubeletName)
+		kubeletCSR, kubeletKey, err := GenerateCertSigningRequestAndKey(true, kubeletName, kubeletAltNames, certs[kubeletName].Key, nil)
+		if err != nil {
+			return err
+		}
+		certs[kubeletName] = ToCertObject(kubeletName, "", "", kubeletCert, kubeletKey, kubeletCSR)
+	}
 	return nil
 }
 
@@ -495,6 +555,18 @@ func GenerateRKEServicesCerts(ctx context.Context, certs map[string]CertificateP
 		GenerateKubeAdminCertificate,
 		GenerateAPIProxyClientCertificate,
 		GenerateEtcdCertificates,
+	}
+	if IsKubeletGenerateServingCertificateEnabledinConfig(&rkeConfig) {
+		RKECerts = append(RKECerts, GenerateKubeletCertificate)
+	} else {
+		//Clean up kubelet certs when GenerateServingCertificate is disabled
+		logrus.Info("[certificates] GenerateServingCertificate is disabled, checking if there are unused kubelet certificates")
+		for k := range certs {
+			if strings.HasPrefix(k, KubeletCertName) {
+				logrus.Infof("[certificates] Deleting unused kubelet certificate: %s", k)
+				delete(certs, k)
+			}
+		}
 	}
 	for _, gen := range RKECerts {
 		if err := gen(ctx, certs, rkeConfig, configPath, configDir, rotate); err != nil {
@@ -518,10 +590,32 @@ func GenerateRKEServicesCSRs(ctx context.Context, certs map[string]CertificatePK
 		GenerateAPIProxyClientCSR,
 		GenerateEtcdCSRs,
 	}
+	if IsKubeletGenerateServingCertificateEnabledinConfig(&rkeConfig) {
+		RKECerts = append(RKECerts, GenerateKubeletCSR)
+	}
 	for _, csr := range RKECerts {
 		if err := csr(ctx, certs, rkeConfig); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func deleteUnusedCerts(ctx context.Context, certs map[string]CertificatePKI, certName string, hostList []*hosts.Host) {
+	hostAddresses := hosts.GetInternalAddressForHosts(hostList)
+	logrus.Tracef("Checking and deleting unused certificates with prefix [%s] for the following [%d] node(s): %s", certName, len(hostAddresses), strings.Join(hostAddresses, ","))
+	unusedCerts := make(map[string]bool)
+	for k := range certs {
+		if strings.HasPrefix(k, certName) {
+			unusedCerts[k] = true
+		}
+	}
+	for _, host := range hostList {
+		Name := GetCrtNameForHost(host, certName)
+		delete(unusedCerts, Name)
+	}
+	for k := range unusedCerts {
+		logrus.Infof("[certificates] Deleting unused certificate: %s", k)
+		delete(certs, k)
+	}
 }

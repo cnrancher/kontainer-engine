@@ -26,6 +26,16 @@ const (
 func DeployCertificatesOnPlaneHost(ctx context.Context, host *hosts.Host, rkeConfig v3.RancherKubernetesEngineConfig, crtMap map[string]CertificatePKI, certDownloaderImage string, prsMap map[string]v3.PrivateRegistry, forceDeploy bool) error {
 	crtBundle := GenerateRKENodeCerts(ctx, rkeConfig, host.Address, crtMap)
 	env := []string{}
+
+	// Strip CA key as its sensitive and unneeded on nodes without controlplane role
+	if !host.IsControl {
+		caCert := crtBundle[CACertName]
+		caCert.Key = nil
+		caCert.KeyEnvName = ""
+		caCert.KeyPath = ""
+		crtBundle[CACertName] = caCert
+	}
+
 	for _, crt := range crtBundle {
 		env = append(env, crt.ToEnv()...)
 	}
@@ -146,7 +156,8 @@ func DeployAdminConfig(ctx context.Context, kubeConfig, localConfigPath string) 
 	if len(kubeConfig) == 0 {
 		return nil
 	}
-	logrus.Debugf("Deploying admin Kubeconfig locally: %s", kubeConfig)
+	logrus.Debugf("Deploying admin Kubeconfig locally at [%s]", localConfigPath)
+	logrus.Tracef("Deploying admin Kubeconfig locally: %s", kubeConfig)
 	err := ioutil.WriteFile(localConfigPath, []byte(kubeConfig), 0640)
 	if err != nil {
 		return fmt.Errorf("Failed to create local admin kubeconfig file: %v", err)
@@ -192,7 +203,7 @@ func FetchCertificatesFromHost(ctx context.Context, extraHosts []*hosts.Host, ho
 
 	for _, etcdHost := range extraHosts {
 		// Fetch etcd certificates
-		crtList[GetEtcdCrtName(etcdHost.InternalAddress)] = false
+		crtList[GetCrtNameForHost(etcdHost, EtcdCertName)] = false
 	}
 
 	for certName, config := range crtList {

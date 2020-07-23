@@ -2,20 +2,28 @@ package cluster
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/rancher/rke/metadata"
-
+	"github.com/blang/semver"
 	"github.com/rancher/rke/cloudprovider"
 	"github.com/rancher/rke/docker"
 	"github.com/rancher/rke/k8s"
 	"github.com/rancher/rke/log"
+	"github.com/rancher/rke/metadata"
 	"github.com/rancher/rke/services"
 	"github.com/rancher/rke/templates"
 	"github.com/rancher/rke/util"
-	"github.com/rancher/types/apis/management.cattle.io/v3"
+	v3 "github.com/rancher/types/apis/management.cattle.io/v3"
 	"github.com/sirupsen/logrus"
+	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	apiserverv1alpha1 "k8s.io/apiserver/pkg/apis/apiserver/v1alpha1"
+	auditv1 "k8s.io/apiserver/pkg/apis/audit/v1"
 )
 
 const (
@@ -58,6 +66,48 @@ const (
 	DefaultFlannelBackendVxLan     = "vxlan"
 	DefaultFlannelBackendVxLanPort = "8472"
 	DefaultFlannelBackendVxLanVNI  = "1"
+
+	DefaultCalicoFlexVolPluginDirectory = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/nodeagent~uds"
+
+	DefaultCanalFlexVolPluginDirectory = "/usr/libexec/kubernetes/kubelet-plugins/volume/exec/nodeagent~uds"
+
+	KubeAPIArgAdmissionControlConfigFile             = "admission-control-config-file"
+	DefaultKubeAPIArgAdmissionControlConfigFileValue = "/etc/kubernetes/admission.yaml"
+
+	EventRateLimitPluginName = "EventRateLimit"
+
+	KubeAPIArgAuditLogPath                = "audit-log-path"
+	KubeAPIArgAuditLogMaxAge              = "audit-log-maxage"
+	KubeAPIArgAuditLogMaxBackup           = "audit-log-maxbackup"
+	KubeAPIArgAuditLogMaxSize             = "audit-log-maxsize"
+	KubeAPIArgAuditLogFormat              = "audit-log-format"
+	KubeAPIArgAuditPolicyFile             = "audit-policy-file"
+	DefaultKubeAPIArgAuditLogPathValue    = "/var/log/kube-audit/audit-log.json"
+	DefaultKubeAPIArgAuditPolicyFileValue = "/etc/kubernetes/audit-policy.yaml"
+
+	DefaultMaxUnavailableWorker       = "10%"
+	DefaultMaxUnavailableControlplane = "1"
+	DefaultNodeDrainTimeout           = 120
+	DefaultNodeDrainGracePeriod       = -1
+	DefaultNodeDrainIgnoreDaemonsets  = true
+)
+
+var (
+	DefaultDaemonSetMaxUnavailable        = intstr.FromInt(1)
+	DefaultDeploymentUpdateStrategyParams = intstr.FromString("25%")
+	DefaultDaemonSetUpdateStrategy        = v3.DaemonSetUpdateStrategy{
+		Strategy:      appsv1.RollingUpdateDaemonSetStrategyType,
+		RollingUpdate: &appsv1.RollingUpdateDaemonSet{MaxUnavailable: &DefaultDaemonSetMaxUnavailable},
+	}
+	DefaultDeploymentUpdateStrategy = v3.DeploymentStrategy{
+		Strategy: appsv1.RollingUpdateDeploymentStrategyType,
+		RollingUpdate: &appsv1.RollingUpdateDeployment{
+			MaxUnavailable: &DefaultDeploymentUpdateStrategyParams,
+			MaxSurge:       &DefaultDeploymentUpdateStrategyParams,
+		},
+	}
+	DefaultClusterProportionalAutoscalerLinearParams = v3.LinearAutoscalerParams{CoresPerReplica: 128, NodesPerReplica: 4, Min: 1, PreventSinglePointFailure: true}
+	DefaultMonitoringAddonReplicas                   = int32(1)
 )
 
 type ExternalFlags struct {
@@ -170,8 +220,36 @@ func (c *Cluster) setClusterDefaults(ctx context.Context, flags ExternalFlags) e
 	c.setClusterServicesDefaults()
 	c.setClusterNetworkDefaults()
 	c.setClusterAuthnDefaults()
-
+	c.setNodeUpgradeStrategy()
+	c.setAddonsDefaults()
 	return nil
+}
+
+func (c *Cluster) setNodeUpgradeStrategy() {
+	if c.UpgradeStrategy == nil {
+		logrus.Debugf("No input provided for maxUnavailableWorker, setting it to default value of %v percent", strings.TrimRight(DefaultMaxUnavailableWorker, "%"))
+		logrus.Debugf("No input provided for maxUnavailableControlplane, setting it to default value of %v", DefaultMaxUnavailableControlplane)
+		c.UpgradeStrategy = &v3.NodeUpgradeStrategy{
+			MaxUnavailableWorker:       DefaultMaxUnavailableWorker,
+			MaxUnavailableControlplane: DefaultMaxUnavailableControlplane,
+		}
+		return
+	}
+	setDefaultIfEmpty(&c.UpgradeStrategy.MaxUnavailableWorker, DefaultMaxUnavailableWorker)
+	setDefaultIfEmpty(&c.UpgradeStrategy.MaxUnavailableControlplane, DefaultMaxUnavailableControlplane)
+	if !c.UpgradeStrategy.Drain {
+		return
+	}
+	if c.UpgradeStrategy.DrainInput == nil {
+		c.UpgradeStrategy.DrainInput = &v3.NodeDrainInput{
+			IgnoreDaemonSets: DefaultNodeDrainIgnoreDaemonsets,
+			// default to 120 seems to work better for controlplane nodes
+			Timeout: DefaultNodeDrainTimeout,
+			//Period of time in seconds given to each pod to terminate gracefully.
+			// If negative, the default value specified in the pod will be used
+			GracePeriod: DefaultNodeDrainGracePeriod,
+		}
+	}
 }
 
 func (c *Cluster) setClusterServicesDefaults() {
@@ -224,6 +302,129 @@ func (c *Cluster) setClusterServicesDefaults() {
 			c.Services.Etcd.BackupConfig.Retention = DefaultEtcdBackupConfigRetention
 		}
 	}
+
+	if _, ok := c.Services.KubeAPI.ExtraArgs[KubeAPIArgAdmissionControlConfigFile]; !ok {
+		if c.Services.KubeAPI.EventRateLimit != nil &&
+			c.Services.KubeAPI.EventRateLimit.Enabled &&
+			c.Services.KubeAPI.EventRateLimit.Configuration == nil {
+			c.Services.KubeAPI.EventRateLimit.Configuration = newDefaultEventRateLimitConfig()
+		}
+	}
+
+	enableKubeAPIAuditLog, err := checkVersionNeedsKubeAPIAuditLog(c.Version)
+	if err != nil {
+		logrus.Warnf("Can not determine if cluster version [%s] needs to have kube-api audit log enabled: %v", c.Version, err)
+	}
+	if enableKubeAPIAuditLog {
+		logrus.Debugf("Enabling kube-api audit log for cluster version [%s]", c.Version)
+
+		if c.Services.KubeAPI.AuditLog == nil {
+			c.Services.KubeAPI.AuditLog = &v3.AuditLog{Enabled: true}
+		}
+
+	}
+	if c.Services.KubeAPI.AuditLog != nil &&
+		c.Services.KubeAPI.AuditLog.Enabled {
+		if c.Services.KubeAPI.AuditLog.Configuration == nil {
+			alc := newDefaultAuditLogConfig()
+			c.Services.KubeAPI.AuditLog.Configuration = alc
+		} else {
+			if c.Services.KubeAPI.AuditLog.Configuration.Policy == nil {
+				c.Services.KubeAPI.AuditLog.Configuration.Policy = newDefaultAuditPolicy()
+			}
+		}
+	}
+}
+
+func newDefaultAuditPolicy() *auditv1.Policy {
+	p := &auditv1.Policy{
+		TypeMeta: v1.TypeMeta{
+			Kind:       "Policy",
+			APIVersion: auditv1.SchemeGroupVersion.String(),
+		},
+		Rules: []auditv1.PolicyRule{
+			{
+				Level: "Metadata",
+			},
+		},
+		OmitStages: nil,
+	}
+	return p
+}
+
+func newDefaultAuditLogConfig() *v3.AuditLogConfig {
+	p := newDefaultAuditPolicy()
+	c := &v3.AuditLogConfig{
+		MaxAge:    30,
+		MaxBackup: 10,
+		MaxSize:   100,
+		Path:      DefaultKubeAPIArgAuditLogPathValue,
+		Format:    "json",
+		Policy:    p,
+	}
+	return c
+}
+
+func getEventRateLimitPluginFromConfig(c *v3.Configuration) (apiserverv1alpha1.AdmissionPluginConfiguration, error) {
+	plugin := apiserverv1alpha1.AdmissionPluginConfiguration{
+		Name: EventRateLimitPluginName,
+		Configuration: &runtime.Unknown{
+			ContentType: "application/json",
+		},
+	}
+
+	cBytes, err := json.Marshal(c)
+	if err != nil {
+		return plugin, fmt.Errorf("error marshalling eventratelimit config: %v", err)
+	}
+	plugin.Configuration.Raw = cBytes
+
+	return plugin, nil
+}
+
+func newDefaultEventRateLimitConfig() *v3.Configuration {
+	return &v3.Configuration{
+		TypeMeta: v1.TypeMeta{
+			Kind:       "Configuration",
+			APIVersion: "eventratelimit.admission.k8s.io/v1alpha1",
+		},
+		Limits: []v3.Limit{
+			{
+				Type:  v3.ServerLimitType,
+				QPS:   5000,
+				Burst: 20000,
+			},
+		},
+	}
+}
+
+func newDefaultEventRateLimitPlugin() (apiserverv1alpha1.AdmissionPluginConfiguration, error) {
+	plugin := apiserverv1alpha1.AdmissionPluginConfiguration{
+		Name: EventRateLimitPluginName,
+		Configuration: &runtime.Unknown{
+			ContentType: "application/json",
+		},
+	}
+
+	c := newDefaultEventRateLimitConfig()
+	cBytes, err := json.Marshal(c)
+	if err != nil {
+		return plugin, fmt.Errorf("error marshalling eventratelimit config: %v", err)
+	}
+	plugin.Configuration.Raw = cBytes
+
+	return plugin, nil
+}
+
+func newDefaultAdmissionConfiguration() (*apiserverv1alpha1.AdmissionConfiguration, error) {
+	var admissionConfiguration *apiserverv1alpha1.AdmissionConfiguration
+	admissionConfiguration = &apiserverv1alpha1.AdmissionConfiguration{
+		TypeMeta: v1.TypeMeta{
+			Kind:       "AdmissionConfiguration",
+			APIVersion: apiserverv1alpha1.SchemeGroupVersion.String(),
+		},
+	}
+	return admissionConfiguration, nil
 }
 
 func (c *Cluster) setClusterImageDefaults() error {
@@ -270,6 +471,7 @@ func (c *Cluster) setClusterImageDefaults() error {
 		&c.SystemImages.Ingress:                   d(imageDefaults.Ingress, privRegURL),
 		&c.SystemImages.IngressBackend:            d(imageDefaults.IngressBackend, privRegURL),
 		&c.SystemImages.MetricsServer:             d(imageDefaults.MetricsServer, privRegURL),
+		&c.SystemImages.Nodelocal:                 d(imageDefaults.Nodelocal, privRegURL),
 		// this's a stopgap, we could drop this after https://github.com/kubernetes/kubernetes/pull/75618 merged
 		&c.SystemImages.WindowsPodInfraContainer: d(imageDefaults.WindowsPodInfraContainer, privRegURL),
 	}
@@ -301,7 +503,9 @@ func (c *Cluster) setClusterDNSDefaults() error {
 		logrus.Debugf("Cluster version [%s] is less than version [%s], using DNS provider [%s]", clusterSemVer, K8sVersionCoreDNSSemVer, DefaultDNSProvider)
 		ClusterDNSProvider = DefaultDNSProvider
 	}
-	c.DNS = &v3.DNSConfig{}
+	if c.DNS == nil {
+		c.DNS = &v3.DNSConfig{}
+	}
 	c.DNS.Provider = ClusterDNSProvider
 	logrus.Debugf("DNS provider set to [%s]", ClusterDNSProvider)
 	return nil
@@ -319,7 +523,8 @@ func (c *Cluster) setClusterNetworkDefaults() {
 	switch c.Network.Plugin {
 	case CalicoNetworkPlugin:
 		networkPluginConfigDefaultsMap = map[string]string{
-			CalicoCloudProvider: DefaultNetworkCloudProvider,
+			CalicoCloudProvider:          DefaultNetworkCloudProvider,
+			CalicoFlexVolPluginDirectory: DefaultCalicoFlexVolPluginDirectory,
 		}
 	case FlannelNetworkPlugin:
 		networkPluginConfigDefaultsMap = map[string]string{
@@ -332,6 +537,7 @@ func (c *Cluster) setClusterNetworkDefaults() {
 			CanalFlannelBackendType:                 DefaultFlannelBackendVxLan,
 			CanalFlannelBackendPort:                 DefaultFlannelBackendVxLanPort,
 			CanalFlannelBackendVxLanNetworkIdentify: DefaultFlannelBackendVxLanVNI,
+			CanalFlexVolPluginDirectory:             DefaultCanalFlexVolPluginDirectory,
 		}
 	}
 	if c.Network.CalicoNetworkProvider != nil {
@@ -408,4 +614,102 @@ func GetExternalFlags(local, updateOnly, disablePortCheck bool, configDir, clust
 		ConfigDir:        configDir,
 		ClusterFilePath:  clusterFilePath,
 	}
+}
+
+func (c *Cluster) setAddonsDefaults() {
+	c.Ingress.UpdateStrategy = setDaemonsetAddonDefaults(c.Ingress.UpdateStrategy)
+	c.Network.UpdateStrategy = setDaemonsetAddonDefaults(c.Network.UpdateStrategy)
+	c.DNS.UpdateStrategy = setDNSDeploymentAddonDefaults(c.DNS.UpdateStrategy, c.DNS.Provider)
+	if c.DNS.LinearAutoscalerParams == nil {
+		c.DNS.LinearAutoscalerParams = &DefaultClusterProportionalAutoscalerLinearParams
+	}
+	c.Monitoring.UpdateStrategy = setDeploymentAddonDefaults(c.Monitoring.UpdateStrategy)
+	if c.Monitoring.Replicas == nil {
+		c.Monitoring.Replicas = &DefaultMonitoringAddonReplicas
+	}
+}
+
+func setDaemonsetAddonDefaults(updateStrategy *v3.DaemonSetUpdateStrategy) *v3.DaemonSetUpdateStrategy {
+	if updateStrategy != nil && updateStrategy.Strategy != appsv1.RollingUpdateDaemonSetStrategyType {
+		return updateStrategy
+	}
+	if updateStrategy == nil || updateStrategy.RollingUpdate == nil || updateStrategy.RollingUpdate.MaxUnavailable == nil {
+		return &DefaultDaemonSetUpdateStrategy
+	}
+	return updateStrategy
+}
+
+func setDeploymentAddonDefaults(updateStrategy *v3.DeploymentStrategy) *v3.DeploymentStrategy {
+	if updateStrategy != nil && updateStrategy.Strategy != appsv1.RollingUpdateDeploymentStrategyType {
+		return updateStrategy
+	}
+	if updateStrategy == nil || updateStrategy.RollingUpdate == nil {
+		return &DefaultDeploymentUpdateStrategy
+	}
+	if updateStrategy.RollingUpdate.MaxUnavailable == nil {
+		updateStrategy.RollingUpdate.MaxUnavailable = &DefaultDeploymentUpdateStrategyParams
+	}
+	if updateStrategy.RollingUpdate.MaxSurge == nil {
+		updateStrategy.RollingUpdate.MaxSurge = &DefaultDeploymentUpdateStrategyParams
+	}
+	return updateStrategy
+}
+
+func setDNSDeploymentAddonDefaults(updateStrategy *v3.DeploymentStrategy, dnsProvider string) *v3.DeploymentStrategy {
+	var (
+		coreDNSMaxUnavailable, coreDNSMaxSurge = intstr.FromInt(1), intstr.FromInt(0)
+		kubeDNSMaxSurge, kubeDNSMaxUnavailable = intstr.FromString("10%"), intstr.FromInt(0)
+	)
+	if updateStrategy != nil && updateStrategy.Strategy != appsv1.RollingUpdateDeploymentStrategyType {
+		return updateStrategy
+	}
+	switch dnsProvider {
+	case CoreDNSProvider:
+		if updateStrategy == nil || updateStrategy.RollingUpdate == nil {
+			return &v3.DeploymentStrategy{
+				Strategy: appsv1.RollingUpdateDeploymentStrategyType,
+				RollingUpdate: &appsv1.RollingUpdateDeployment{
+					MaxUnavailable: &coreDNSMaxUnavailable,
+					MaxSurge:       &coreDNSMaxSurge,
+				},
+			}
+		}
+		if updateStrategy.RollingUpdate.MaxUnavailable == nil {
+			updateStrategy.RollingUpdate.MaxUnavailable = &coreDNSMaxUnavailable
+		}
+	case KubeDNSProvider:
+		if updateStrategy == nil || updateStrategy.RollingUpdate == nil {
+			return &v3.DeploymentStrategy{
+				Strategy: appsv1.RollingUpdateDeploymentStrategyType,
+				RollingUpdate: &appsv1.RollingUpdateDeployment{
+					MaxUnavailable: &kubeDNSMaxUnavailable,
+					MaxSurge:       &kubeDNSMaxSurge,
+				},
+			}
+		}
+		if updateStrategy.RollingUpdate.MaxSurge == nil {
+			updateStrategy.RollingUpdate.MaxSurge = &kubeDNSMaxSurge
+		}
+	}
+
+	return updateStrategy
+}
+
+func checkVersionNeedsKubeAPIAuditLog(k8sVersion string) (bool, error) {
+	toMatch, err := semver.Make(k8sVersion[1:])
+	if err != nil {
+		return false, fmt.Errorf("Cluster version [%s] can not be parsed as semver", k8sVersion[1:])
+	}
+	logrus.Debugf("Checking if cluster version [%s] needs to have kube-api audit log enabled", k8sVersion[1:])
+	// kube-api audit log needs to be enabled for k8s 1.15.11 and up, k8s 1.16.8 and up, k8s 1.17.4 and up
+	clusterKubeAPIAuditLogRange, err := semver.ParseRange(">=1.15.11-rancher0 <=1.15.99 || >=1.16.8-rancher0 <=1.16.99 || >=1.17.4-rancher0")
+	if err != nil {
+		return false, errors.New("Failed to parse semver range for checking to enable kube-api audit log")
+	}
+	if clusterKubeAPIAuditLogRange(toMatch) {
+		logrus.Debugf("Cluster version [%s] needs to have kube-api audit log enabled", k8sVersion[1:])
+		return true, nil
+	}
+	logrus.Debugf("Cluster version [%s] does not need to have kube-api audit log enabled", k8sVersion[1:])
+	return false, nil
 }
