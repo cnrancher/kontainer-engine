@@ -78,6 +78,8 @@ type state struct {
 	AgentOsdiskSizeGB int64 `json:"agentOsdiskSize,omitempty"`
 	// AgentVMSize specifies the VM size in the agent pool. [optional only when creating]
 	AgentVMSize string `json:"agentVmSize,omitempty"`
+	// LoadBalancerSku specifies the LoadBalancer SKU of the cluster. [optional only when creating]
+	LoadBalancerSku string `json:"loadBalancerSku,omitempty"`
 	// VirtualNetworkResourceGroup specifies the Azure Virtual Network located int which resource group. Composite of agent virtual network subnet ID. [optional only when creating]
 	VirtualNetworkResourceGroup string `json:"virtualNetworkResourceGroup,omitempty"`
 	// VirtualNetwork specifies an existing Azure Virtual Network. Composite of agent virtual network subnet ID. [optional only when creating]
@@ -102,8 +104,6 @@ type state struct {
 	NetworkPodCIDR string `json:"podCidr,omitempty"`
 	// NetworkServiceCIDR specifies a CIDR notation IP range from which to assign service cluster IPs, it must not overlap with any Azure Subnet IP ranges. [optional only when creating]
 	NetworkServiceCIDR string `json:"serviceCidr,omitempty"`
-	// loadBalancerSku specifies the loadBalancer Sku of the cluster. [optional only when creating]
-	LoadBalancerSku string `json:"loadBalancerSku,omitempty"`
 
 	// Location specifies the cluster location. [requirement]
 	Location string `json:"location,omitempty"`
@@ -239,6 +239,10 @@ func (d *Driver) GetDriverCreateOptions(ctx context.Context) (*types.DriverFlags
 		Type:  types.StringType,
 		Usage: "Size of machine in the agent pool.",
 		Value: string(containerservice.VMSizeTypesStandardD1V2),
+	}
+	driverFlag.Options["load-balancer-sku"] = &types.Flag{
+		Type:  types.StringType,
+		Usage: "The LoadBalancer SKU of the cluster.",
 	}
 	driverFlag.Options["virtual-network-resource-group"] = &types.Flag{
 		Type:  types.StringType,
@@ -437,6 +441,7 @@ func getStateFromOptions(driverOptions *types.DriverOptions) (state, error) {
 
 	state.LinuxAdminUsername = options.GetValueFromDriverOptions(driverOptions, types.StringType, "admin-username", "adminUsername").(string)
 	state.LinuxSSHPublicKeyContents = options.GetValueFromDriverOptions(driverOptions, types.StringType, "ssh-public-key-contents", "sshPublicKeyContents", "public-key-contents", "publicKeyContents").(string)
+	state.LoadBalancerSku = options.GetValueFromDriverOptions(driverOptions, types.StringType, "load-balancer-sku", "loadBalancerSku").(string)
 
 	state.NetworkDNSServiceIP = options.GetValueFromDriverOptions(driverOptions, types.StringType, "dns-service-ip", "dnsServiceIp").(string)
 	state.NetworkDockerBridgeCIDR = options.GetValueFromDriverOptions(driverOptions, types.StringType, "docker-bridge-cidr", "dockerBridgeCidr").(string)
@@ -444,7 +449,6 @@ func getStateFromOptions(driverOptions *types.DriverOptions) (state, error) {
 	state.NetworkPolicy = options.GetValueFromDriverOptions(driverOptions, types.StringType, "network-policy", "networkPolicy").(string)
 	state.NetworkPodCIDR = options.GetValueFromDriverOptions(driverOptions, types.StringType, "pod-cidr", "podCidr").(string)
 	state.NetworkServiceCIDR = options.GetValueFromDriverOptions(driverOptions, types.StringType, "service-cidr", "serviceCidr").(string)
-	state.LoadBalancerSku = options.GetValueFromDriverOptions(driverOptions, types.StringType, "load-balancer-sku", "loadBalancerSku").(string)
 
 	state.Location = options.GetValueFromDriverOptions(driverOptions, types.StringType, "location").(string)
 	state.DNSPrefix = options.GetValueFromDriverOptions(driverOptions, types.StringType, "master-dns-prefix", "masterDnsPrefix").(string)
@@ -631,7 +635,7 @@ func (d *Driver) Update(ctx context.Context, info *types.ClusterInfo, options *t
 	return d.createOrUpdate(ctx, options, false)
 }
 
-func (d *Driver) createOrUpdate(ctx context.Context, options *types.DriverOptions, sendRBAC bool) (*types.ClusterInfo, error) {
+func (d *Driver) createOrUpdate(ctx context.Context, options *types.DriverOptions, create bool) (*types.ClusterInfo, error) {
 	driverState, err := getStateFromOptions(options)
 	if err != nil {
 		return nil, err
@@ -738,7 +742,6 @@ func (d *Driver) createOrUpdate(ctx context.Context, options *types.DriverOption
 
 	var vmNetSubnetID *string
 	networkProfile := &containerservice.NetworkProfileType{}
-
 	if driverState.hasCustomVirtualNetwork() {
 		virtualNetworkResourceGroup := driverState.ResourceGroup
 
@@ -755,11 +758,9 @@ func (d *Driver) createOrUpdate(ctx context.Context, options *types.DriverOption
 			driverState.Subnet,
 		))
 
-		networkProfile = &containerservice.NetworkProfileType{
-			DNSServiceIP:     to.StringPtr(driverState.NetworkDNSServiceIP),
-			DockerBridgeCidr: to.StringPtr(driverState.NetworkDockerBridgeCIDR),
-			ServiceCidr:      to.StringPtr(driverState.NetworkServiceCIDR),
-		}
+		networkProfile.DNSServiceIP = to.StringPtr(driverState.NetworkDNSServiceIP)
+		networkProfile.DockerBridgeCidr = to.StringPtr(driverState.NetworkDockerBridgeCIDR)
+		networkProfile.ServiceCidr = to.StringPtr(driverState.NetworkServiceCIDR)
 
 		if driverState.NetworkPlugin == "" {
 			networkProfile.NetworkPlugin = containerservice.Azure
@@ -777,7 +778,10 @@ func (d *Driver) createOrUpdate(ctx context.Context, options *types.DriverOption
 		}
 	}
 
-	networkProfile.LoadBalancerSku = containerservice.LoadBalancerSku(driverState.LoadBalancerSku)
+	loadBalancerSku := containerservice.LoadBalancerSku(driverState.LoadBalancerSku)
+	if create && containerservice.Standard == loadBalancerSku {
+		networkProfile.LoadBalancerSku = loadBalancerSku
+	}
 
 	var agentPoolProfiles *[]containerservice.ManagedClusterAgentPoolProfile
 	if driverState.hasAgentPoolProfile() {
@@ -850,7 +854,7 @@ func (d *Driver) createOrUpdate(ctx context.Context, options *types.DriverOption
 		},
 	}
 
-	if sendRBAC {
+	if create {
 		managedCluster.ManagedClusterProperties.EnableRBAC = to.BoolPtr(true)
 	}
 
